@@ -274,9 +274,19 @@ export function ChatPane() {
           </div>
         )}
 
-        {thread.map((node) => (
+        {thread.map((node, index) => (
           <div key={node.id} data-node-id={node.id}>
-            <ChatMessage role="user" text={node.prompt} nodeId={node.id} />
+            <ChatMessage
+              role="user"
+              text={node.prompt}
+              nodeId={node.id}
+              label={node.label}
+              createdAt={node.createdAt}
+              depth={index + 1}
+              branchCount={node.children.length}
+              bookmarked={node.bookmarked}
+              status={node.status}
+            />
             {(node.response || node.status === 'streaming') && (
               <ChatMessage
                 role="model"

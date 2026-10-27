@@ -188,7 +188,7 @@ export default function App() {
             </div>
             <h2>Branch Chat</h2>
             <p>
-              Create a new project to start branching conversations.
+              Create a new chat session to start branching conversations.
               Each message becomes a node in a visual tree — fork any point
               to explore different directions.
             </p>
@@ -199,7 +199,7 @@ export default function App() {
             )}
             <button className="no-project-btn" onClick={handleNewProject}>
               <Plus size={18} />
-              New Project
+              New Chat Session
             </button>
           </div>
         </div>

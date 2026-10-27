@@ -1095,19 +1095,173 @@ a {
   letter-spacing: -0.006em;
 }
 
-/* User messages: right-aligned bubble */
+/* User messages: professional card */
 .chat-message.user {
-  align-items: flex-end;
+  align-items: stretch;
 }
 
-.chat-message.user .chat-message-body {
-  background: var(--bg-tertiary, #e8e8e8);
-  padding: 10px 16px;
-  border-radius: 18px 18px 4px 18px;
-  max-width: 80%;
-  width: fit-content;
-  font-size: 0.875rem;
-  line-height: 1.6;
+/* ===== User Prompt Card ===== */
+.user-card {
+  background: rgba(34, 139, 34, 0.1);
+  border: 1px solid rgba(34, 139, 34, 0.2);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.user-card:hover {
+  border-color: rgba(34, 139, 34, 0.25);
+  box-shadow: var(--shadow-sm);
+}
+
+[data-theme='dark'] .user-card {
+  background: rgba(34, 180, 80, 0.12);
+  border-color: rgba(34, 180, 80, 0.22);
+}
+
+[data-theme='dark'] .user-card:hover {
+  border-color: rgba(34, 180, 80, 0.28);
+}
+
+/* Card header */
+.user-card-header {
+  padding: 10px 14px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.user-card-label-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.user-card-bookmark {
+  color: var(--accent-warning);
+  display: flex;
+  flex-shrink: 0;
+}
+
+.user-card-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-card-edit-btn {
+  padding: 3px;
+  border-radius: 4px;
+  color: var(--text-tertiary);
+  opacity: 0;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.user-card:hover .user-card-edit-btn {
+  opacity: 1;
+}
+
+.user-card-edit-btn:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+/* Metadata chips */
+.user-card-meta {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.user-card-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.6rem;
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.user-card-chip.complete {
+  background: var(--accent-success-light);
+  color: var(--accent-success);
+}
+
+.user-card-chip.streaming {
+  background: var(--accent-primary-light);
+  color: var(--accent-primary);
+}
+
+.user-card-chip.error {
+  background: var(--accent-danger-light);
+  color: var(--accent-danger);
+}
+
+/* Card body */
+.user-card-body {
+  padding: 8px 14px;
+  font-size: 0.9rem;
+  line-height: 1.65;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Card footer */
+.user-card-footer {
+  padding: 0 14px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.user-card-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.6rem;
+  color: var(--text-tertiary);
+}
+
+.user-card-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.6rem;
+  padding: 3px 8px;
+  border-radius: 6px;
+  color: var(--text-tertiary);
+  opacity: 0;
+  transition: all 0.15s ease;
+}
+
+.user-card:hover .user-card-copy-btn {
+  opacity: 1;
+}
+
+.user-card-copy-btn:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.user-card-copy-btn.copied {
+  color: var(--accent-success);
+  opacity: 1;
 }
 
 /* AI messages: clean, no background, full-width text */
