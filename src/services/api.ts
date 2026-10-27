@@ -262,11 +262,14 @@ async function streamAgy({ query, projectId, provider, onChunk, onDone, onError 
             const json = JSON.parse(data);
             if (json.type === 'delta' && json.text) {
               onChunk(json.text);
-            } else if (json.type === 'done' && json.usage) {
-              capturedUsage = {
-                tokensIn: json.usage.input_tokens || json.usage.prompt_tokens || 0,
-                tokensOut: json.usage.output_tokens || json.usage.completion_tokens || 0,
-              };
+            } else if (json.type === 'done') {
+              const u = json.usage;
+              if (u) {
+                capturedUsage = {
+                  tokensIn: u.input_tokens || u.prompt_tokens || u.tokensIn || 0,
+                  tokensOut: u.output_tokens || u.completion_tokens || u.tokensOut || 0,
+                };
+              }
             } else if (json.type === 'error') {
               onError(new Error(json.error));
               return;

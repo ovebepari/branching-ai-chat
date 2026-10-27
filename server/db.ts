@@ -48,6 +48,12 @@ try {
 try {
   db.exec(`ALTER TABLE nodes ADD COLUMN bookmarked INTEGER NOT NULL DEFAULT 0`);
 } catch { /* column already exists */ }
+try {
+  db.exec(`ALTER TABLE nodes ADD COLUMN tokens_in INTEGER NOT NULL DEFAULT 0`);
+} catch { /* column already exists */ }
+try {
+  db.exec(`ALTER TABLE nodes ADD COLUMN tokens_out INTEGER NOT NULL DEFAULT 0`);
+} catch { /* column already exists */ }
 
 // --- Prepared statements ---
 
@@ -103,6 +109,10 @@ const getNode = db.prepare(
 
 const updateNodeResponse = db.prepare(
   `UPDATE nodes SET response = ?, status = ? WHERE id = ?`
+);
+
+const updateNodeUsage = db.prepare(
+  `UPDATE nodes SET tokens_in = ?, tokens_out = ? WHERE id = ?`
 );
 
 const updateNodeLabel = db.prepare(
@@ -206,6 +216,10 @@ export const dbApi = {
     updateNodeStatus.run(status, id);
   },
 
+  updateUsage(id: string, tokensIn: number, tokensOut: number) {
+    updateNodeUsage.run(tokensIn, tokensOut, id);
+  },
+
   deleteNode(id: string) {
     deleteNodeStmt.run(id);
   },
@@ -253,6 +267,8 @@ export const dbApi = {
         status: row.status,
         createdAt: row.created_at,
         bookmarked: !!row.bookmarked,
+        tokensIn: row.tokens_in || 0,
+        tokensOut: row.tokens_out || 0,
       };
     }
 

@@ -1023,6 +1023,30 @@ a {
   color: #fbbf24;
 }
 
+/* Token usage row */
+.tree-node-tokens {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  padding: 3px 6px;
+  border-radius: 6px;
+  background: rgba(245, 158, 11, 0.08);
+  font-size: 0.58rem;
+  font-family: var(--font-mono);
+  color: #d97706;
+  white-space: nowrap;
+}
+
+[data-theme='dark'] .tree-node-tokens {
+  background: rgba(245, 158, 11, 0.1);
+  color: #fbbf24;
+}
+
+.tree-node-tokens-sep {
+  opacity: 0.4;
+}
+
 /* Styled handles */
 .tree-node-handle {
   width: 8px !important;

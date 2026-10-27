@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState, useCallback } from 'react';
+import { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import { useTreeStore } from '../store/useTreeStore';
 import { streamQuery, generateLabel } from '../services/api';
 import { ChatMessage } from './ChatMessage';
@@ -24,7 +24,7 @@ export function ChatPane() {
   const setNodeUsage = useTreeStore((s) => s.setNodeUsage);
   const provider = useTreeStore((s) => s.provider);
 
-  const [input, setInput] = useState('');
+  const inputRef = useRef('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [toast, setToast] = useState('');
   const [copied, setCopied] = useState(false);
@@ -61,13 +61,12 @@ export function ChatPane() {
     }
   }, [thread, activeNodeId, activeNode?.response, activeNode?.status]);
 
-  // Auto-resize textarea
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = '24px';
-      textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
-    }
-  }, [input]);
+  // Auto-resize textarea (via ref, no re-render)
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    inputRef.current = e.target.value;
+    e.target.style.height = '24px';
+    e.target.style.height = e.target.scrollHeight + 'px';
+  }, []);
 
   // Toast auto-hide
   useEffect(() => {
@@ -89,7 +88,7 @@ export function ChatPane() {
   const showToast = (msg: string) => setToast(msg);
 
   const handleSubmit = useCallback(async () => {
-    const query = input.trim();
+    const query = inputRef.current.trim();
     if (!query || isStreaming) return;
 
     // Collect history from active node's ancestor chain
@@ -99,7 +98,8 @@ export function ChatPane() {
     const newNodeId = await addNode(query, activeNodeId || null);
     if (!newNodeId) return;
 
-    setInput('');
+    inputRef.current = '';
+    if (textareaRef.current) { textareaRef.current.value = ''; textareaRef.current.style.height = '24px'; }
     setIsStreaming(true);
     setNodeStatus(newNodeId, 'streaming');
 
@@ -135,7 +135,7 @@ export function ChatPane() {
       setNodeStatus(newNodeId, 'error');
       setIsStreaming(false);
     }
-  }, [input, isStreaming, activeNodeId, provider, addNode, appendNodeResponse, setNodeStatus, setNodeLabel, getThreadHistory]);
+  }, [isStreaming, activeNodeId, provider, addNode, appendNodeResponse, setNodeStatus, setNodeLabel, getThreadHistory]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -201,6 +201,31 @@ export function ChatPane() {
   // Depth indicator
   const depth = thread.length;
   const hasChildren = activeNode?.children && activeNode.children.length > 0;
+
+  // Memoize message list to avoid re-rendering on input changes
+  const messageElements = useMemo(() => thread.map((node, index) => (
+    <div key={node.id} data-node-id={node.id}>
+      <ChatMessage
+        role="user"
+        text={node.prompt}
+        nodeId={node.id}
+        label={node.label}
+        createdAt={node.createdAt}
+        depth={index + 1}
+        branchCount={node.children.length}
+        bookmarked={node.bookmarked}
+        status={node.status}
+      />
+      {(node.response || node.status === 'streaming') && (
+        <ChatMessage
+          role="model"
+          text={node.response}
+          nodeId={node.id}
+          isStreaming={node.status === 'streaming'}
+        />
+      )}
+    </div>
+  )), [thread]);
 
   return (
     <div className="chat-pane">
@@ -355,29 +380,7 @@ export function ChatPane() {
           </div>
         )}
 
-        {thread.map((node, index) => (
-          <div key={node.id} data-node-id={node.id}>
-            <ChatMessage
-              role="user"
-              text={node.prompt}
-              nodeId={node.id}
-              label={node.label}
-              createdAt={node.createdAt}
-              depth={index + 1}
-              branchCount={node.children.length}
-              bookmarked={node.bookmarked}
-              status={node.status}
-            />
-            {(node.response || node.status === 'streaming') && (
-              <ChatMessage
-                role="model"
-                text={node.response}
-                nodeId={node.id}
-                isStreaming={node.status === 'streaming'}
-              />
-            )}
-          </div>
-        ))}
+        {messageElements}
 
         <div ref={messagesEndRef} />
       </div>
@@ -387,8 +390,7 @@ export function ChatPane() {
           <textarea
             ref={textareaRef}
             className="chat-input"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             placeholder={
               activeNode
@@ -401,7 +403,7 @@ export function ChatPane() {
           <button
             className="chat-send-btn"
             onClick={handleSubmit}
-            disabled={!input.trim() || isStreaming}
+            disabled={isStreaming}
             title="Send (Enter)"
           >
             <ArrowUp size={18} />

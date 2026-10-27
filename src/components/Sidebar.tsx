@@ -225,7 +225,7 @@ export function Sidebar({ onOpenSettings, onNewProject }: SidebarProps) {
 
               <button className="new-project-btn" onClick={onNewProject}>
                 <Plus size={14} />
-                New Chat Session
+                New Project
                 <span className="kbd" style={{ marginLeft: 'auto' }}>⌘N</span>
               </button>
             </div>

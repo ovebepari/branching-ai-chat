@@ -184,6 +184,17 @@ app.patch('/api/nodes/:id/response', (req, res) => {
   }
 });
 
+// Update node token usage
+app.patch('/api/nodes/:id/usage', (req, res) => {
+  try {
+    const { tokensIn, tokensOut } = req.body;
+    dbApi.updateUsage(req.params.id, tokensIn || 0, tokensOut || 0);
+    res.json({ ok: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Update node label
 app.patch('/api/nodes/:id/label', (req, res) => {
   try {
@@ -386,6 +397,7 @@ app.post('/api/agy/query', (req, res) => {
         if (json.event === 'result') {
           // Capture token usage
           const usage = json.result?.usage;
+          console.log(`  📊  [agy] Result event usage:`, JSON.stringify(usage || 'none'));
           if (usage) {
             agyStats.totalTokensIn += usage.input_tokens || usage.prompt_tokens || 0;
             agyStats.totalTokensOut += usage.output_tokens || usage.completion_tokens || 0;
@@ -393,7 +405,7 @@ app.post('/api/agy/query', (req, res) => {
           res.write(`data: ${JSON.stringify({
             type: 'done',
             conversationId: conversationIdCaptured,
-            usage,
+            usage: usage || null,
           })}\n\n`);
         }
       } catch {

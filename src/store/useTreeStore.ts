@@ -298,6 +298,8 @@ export const useTreeStore = create<TreeStore>((set, get) => ({
         };
       }),
     });
+    // Persist to DB
+    db.updateNodeUsage(nodeId, tokensIn, tokensOut).catch(() => {});
   },
 
   // Persist the final accumulated response to the DB

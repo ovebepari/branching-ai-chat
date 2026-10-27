@@ -52,6 +52,12 @@ export const db = {
       body: JSON.stringify({ response, status }),
     }),
 
+  updateNodeUsage: (nodeId: string, tokensIn: number, tokensOut: number) =>
+    fetchJson(`/nodes/${nodeId}/usage`, {
+      method: 'PATCH',
+      body: JSON.stringify({ tokensIn, tokensOut }),
+    }),
+
   updateNodeLabel: (nodeId: string, label: string) =>
     fetchJson(`/nodes/${nodeId}/label`, {
       method: 'PATCH',

@@ -110,7 +110,7 @@ export default function App() {
     if (!el) return;
     const cur = parseFloat(el.style.width) || layoutRef.current.chatWidth;
     const maxChat = Math.round(window.innerWidth * 0.85);
-    const next = Math.max(280, Math.min(maxChat, cur - delta));
+    const next = Math.max(280, Math.min(maxChat, cur + delta));
     el.style.width = `${next}px`;
   }, []);
 
@@ -188,7 +188,7 @@ export default function App() {
             </div>
             <h2>Branch Chat</h2>
             <p>
-              Create a new chat session to start branching conversations.
+              Create a new project to start branching conversations.
               Each message becomes a node in a visual tree — fork any point
               to explore different directions.
             </p>
@@ -199,7 +199,7 @@ export default function App() {
             )}
             <button className="no-project-btn" onClick={handleNewProject}>
               <Plus size={18} />
-              New Chat Session
+              New Project
             </button>
           </div>
         </div>

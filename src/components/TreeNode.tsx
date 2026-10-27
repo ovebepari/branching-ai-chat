@@ -250,13 +250,17 @@ export const CustomTreeNode = memo(({ data, id }: NodeProps) => {
                 <MessageSquare size={10} />
               </span>
             )}
-            {(tokensIn || tokensOut) && (
-              <span className="tree-node-badge token-badge" title={`In: ${(tokensIn || 0).toLocaleString()} · Out: ${(tokensOut || 0).toLocaleString()}`}>
-                <Zap size={9} /> {((tokensIn || 0) + (tokensOut || 0)).toLocaleString()}
-              </span>
-            )}
           </div>
         </div>
+
+        {/* Token usage row */}
+        {(tokensIn || tokensOut) ? (
+          <div className="tree-node-tokens">
+            <Zap size={9} />
+            <span>{(tokensIn || 0).toLocaleString()} tokens in,</span>
+            <span>{(tokensOut || 0).toLocaleString()} out</span>
+          </div>
+        ) : null}
 
         <Handle type="source" position={Position.Bottom} className="tree-node-handle" />
       </div>
