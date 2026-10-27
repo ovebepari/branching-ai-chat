@@ -8,6 +8,8 @@ export interface TreeNode {
   status: 'idle' | 'streaming' | 'complete' | 'error';
   createdAt: number;
   bookmarked?: boolean;
+  tokensIn?: number;
+  tokensOut?: number;
 }
 
 export interface Project {

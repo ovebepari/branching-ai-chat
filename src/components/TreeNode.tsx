@@ -26,7 +26,7 @@ export const CustomTreeNode = memo(({ data, id }: NodeProps) => {
   const setNodeLabel = useTreeStore((s) => s.setNodeLabel);
   const getAncestorChain = useTreeStore((s) => s.getAncestorChain);
   const getActiveProject = useTreeStore((s) => s.getActiveProject);
-  const { status, label, isActive, parentId, bookmarked, createdAt, children: childIds, response } = data as any;
+  const { status, label, isActive, parentId, bookmarked, createdAt, children: childIds, response, tokensIn, tokensOut } = data as any;
 
   const timeLabel = createdAt ? new Date(createdAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
 
@@ -248,6 +248,11 @@ export const CustomTreeNode = memo(({ data, id }: NodeProps) => {
             {response && (
               <span className="tree-node-badge" title="Has response">
                 <MessageSquare size={10} />
+              </span>
+            )}
+            {(tokensIn || tokensOut) && (
+              <span className="tree-node-badge token-badge" title={`In: ${(tokensIn || 0).toLocaleString()} · Out: ${(tokensOut || 0).toLocaleString()}`}>
+                ⚡ {((tokensIn || 0) + (tokensOut || 0)).toLocaleString()}
               </span>
             )}
           </div>

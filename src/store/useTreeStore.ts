@@ -35,6 +35,7 @@ interface TreeStore {
   updateNodeResponse: (nodeId: string, response: string) => void;
   appendNodeResponse: (nodeId: string, chunk: string) => void;
   setNodeStatus: (nodeId: string, status: TreeNode['status']) => void;
+  setNodeUsage: (nodeId: string, tokensIn: number, tokensOut: number) => void;
   setNodeLabel: (nodeId: string, label: string) => void;
   deleteNode: (nodeId: string) => Promise<void>;
   compressBranch: (nodeId: string, summary: string) => Promise<void>;
@@ -276,6 +277,23 @@ export const useTreeStore = create<TreeStore>((set, get) => ({
           nodes: {
             ...p.nodes,
             [nodeId]: { ...p.nodes[nodeId], status },
+          },
+        };
+      }),
+    });
+  },
+
+  setNodeUsage: (nodeId: string, tokensIn: number, tokensOut: number) => {
+    const { activeProjectId, projects } = get();
+    if (!activeProjectId) return;
+    set({
+      projects: projects.map((p) => {
+        if (p.id !== activeProjectId || !p.nodes[nodeId]) return p;
+        return {
+          ...p,
+          nodes: {
+            ...p.nodes,
+            [nodeId]: { ...p.nodes[nodeId], tokensIn, tokensOut },
           },
         };
       }),

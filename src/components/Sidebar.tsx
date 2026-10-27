@@ -42,7 +42,25 @@ export function Sidebar({ onOpenSettings, onNewProject }: SidebarProps) {
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [showStats, setShowStats] = useState(false);
+  const [agyStatsData, setAgyStatsData] = useState<any>(null);
   const renameInputRef = useRef<HTMLInputElement>(null);
+
+  const handleStatusClick = useCallback(async () => {
+    if (showStats) {
+      setShowStats(false);
+      return;
+    }
+    try {
+      const res = await fetch('http://localhost:3001/api/agy/stats');
+      const data = await res.json();
+      setAgyStatsData(data);
+      setShowStats(true);
+    } catch {
+      setAgyStatsData({ uptime: '–', totalRequests: 0, activeRequests: 0, totalRetries: 0, errors: 0, totalTokensIn: 0, totalTokensOut: 0, sessionsByProject: {} });
+      setShowStats(true);
+    }
+  }, [showStats]);
 
   useEffect(() => {
     if (renamingId && renameInputRef.current) {
@@ -268,13 +286,90 @@ export function Sidebar({ onOpenSettings, onNewProject }: SidebarProps) {
               <Settings size={14} />
               Settings
             </button>
-            <div className="sidebar-status">
+            <div
+              className={`sidebar-status ${showStats ? 'active' : ''}`}
+              onClick={handleStatusClick}
+              style={{ cursor: 'pointer' }}
+              title="Click for agy stats"
+            >
               <span className={`status-dot ${statusClass}`} />
               <span>{statusLabel}</span>
               {serverOnline && provider.model && provider.type !== 'mock' && (
                 <span style={{ opacity: 0.6 }}>· {provider.model}</span>
               )}
             </div>
+
+            {/* Stats popover */}
+            {showStats && agyStatsData && (
+              <div className="sidebar-stats-panel">
+                <div className="stats-panel-header">
+                  <span>📊 Agy Status</span>
+                  <button className="stats-panel-close" onClick={() => setShowStats(false)}>
+                    <X size={12} />
+                  </button>
+                </div>
+                <div className="stats-panel-grid">
+                  <div className="stats-item">
+                    <span className="stats-label">Uptime</span>
+                    <span className="stats-value">{agyStatsData.uptime}</span>
+                  </div>
+                  <div className="stats-item">
+                    <span className="stats-label">Requests</span>
+                    <span className="stats-value">{agyStatsData.totalRequests}</span>
+                  </div>
+                  <div className="stats-item">
+                    <span className="stats-label">Active</span>
+                    <span className="stats-value">{agyStatsData.activeRequests}</span>
+                  </div>
+                  <div className="stats-item">
+                    <span className="stats-label">Retries</span>
+                    <span className="stats-value">{agyStatsData.totalRetries}</span>
+                  </div>
+                  <div className="stats-item">
+                    <span className="stats-label">Errors</span>
+                    <span className="stats-value error">{agyStatsData.errors}</span>
+                  </div>
+                  <div className="stats-item">
+                    <span className="stats-label">Tokens In</span>
+                    <span className="stats-value">{(agyStatsData.totalTokensIn || 0).toLocaleString()}</span>
+                  </div>
+                  <div className="stats-item">
+                    <span className="stats-label">Tokens Out</span>
+                    <span className="stats-value">{(agyStatsData.totalTokensOut || 0).toLocaleString()}</span>
+                  </div>
+                  <div className="stats-item">
+                    <span className="stats-label">Provider</span>
+                    <span className="stats-value">{provider.type}</span>
+                  </div>
+                </div>
+
+                {agyStatsData.sessionsByProject && Object.keys(agyStatsData.sessionsByProject).length > 0 && (
+                  <>
+                    <div className="stats-panel-divider" />
+                    <div className="stats-panel-subheader">Sessions</div>
+                    {Object.entries(agyStatsData.sessionsByProject).map(([pid, sess]: [string, any]) => {
+                      const proj = projects.find(p => p.id === pid);
+                      return (
+                        <div key={pid} className="stats-session-row">
+                          <span className="stats-session-name">{proj?.name || pid.slice(0, 8)}</span>
+                          <span className="stats-session-meta">
+                            {sess.requestCount} req · {sess.lastModel}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </>
+                )}
+
+                <div className="stats-panel-divider" />
+                <div className="stats-panel-footer">
+                  {projects.length} projects · {Object.keys(projects.reduce((acc: any, p) => {
+                    const nodes = (p as any).nodes;
+                    return { ...acc, ...(typeof nodes === 'object' ? nodes : {}) };
+                  }, {})).length || '–'} total nodes
+                </div>
+              </div>
+            )}
           </div>
         </>
       )}

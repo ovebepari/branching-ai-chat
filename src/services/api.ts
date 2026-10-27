@@ -4,7 +4,7 @@ import type { ProviderConfig } from '../types';
 // Each provider streams text chunks via a callback
 
 type OnChunk = (chunk: string) => void;
-type OnDone = () => void;
+type OnDone = (usage?: { tokensIn: number; tokensOut: number }) => void;
 type OnError = (err: Error) => void;
 
 interface StreamOptions {
@@ -244,6 +244,8 @@ async function streamAgy({ query, projectId, provider, onChunk, onDone, onError 
     const decoder = new TextDecoder();
     let buffer = '';
 
+    let capturedUsage: { tokensIn: number; tokensOut: number } | undefined;
+
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
@@ -260,6 +262,11 @@ async function streamAgy({ query, projectId, provider, onChunk, onDone, onError 
             const json = JSON.parse(data);
             if (json.type === 'delta' && json.text) {
               onChunk(json.text);
+            } else if (json.type === 'done' && json.usage) {
+              capturedUsage = {
+                tokensIn: json.usage.input_tokens || json.usage.prompt_tokens || 0,
+                tokensOut: json.usage.output_tokens || json.usage.completion_tokens || 0,
+              };
             } else if (json.type === 'error') {
               onError(new Error(json.error));
               return;
@@ -270,7 +277,7 @@ async function streamAgy({ query, projectId, provider, onChunk, onDone, onError 
         }
       }
     }
-    onDone();
+    onDone(capturedUsage);
   } catch (err) {
     onError(err instanceof Error ? err : new Error(String(err)));
   }

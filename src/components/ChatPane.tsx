@@ -21,6 +21,7 @@ export function ChatPane() {
   const toggleBookmark = useTreeStore((s) => s.toggleBookmark);
   const deleteNode = useTreeStore((s) => s.deleteNode);
   const setActiveNode = useTreeStore((s) => s.setActiveNode);
+  const setNodeUsage = useTreeStore((s) => s.setNodeUsage);
   const provider = useTreeStore((s) => s.provider);
 
   const [input, setInput] = useState('');
@@ -115,8 +116,11 @@ export function ChatPane() {
         onChunk: (chunk) => {
           appendNodeResponse(newNodeId, chunk);
         },
-        onDone: () => {
+        onDone: (usage) => {
           setNodeStatus(newNodeId, 'complete');
+          if (usage) {
+            setNodeUsage(newNodeId, usage.tokensIn, usage.tokensOut);
+          }
           setIsStreaming(false);
           persistNodeResponse(newNodeId);
         },
