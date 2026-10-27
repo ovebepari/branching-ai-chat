@@ -687,7 +687,7 @@ a {
 }
 
 .tree-node-label {
-  font-size: 0.8rem;
+  font-size: 0.925rem;
   font-weight: 600;
   color: var(--text-primary);
   line-height: 1.35;
@@ -704,7 +704,7 @@ a {
   align-items: center;
   gap: var(--space-1);
   margin-top: 5px;
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   color: var(--text-tertiary);
 }
 
@@ -718,12 +718,12 @@ a {
 .tree-node-time {
   margin-left: auto;
   opacity: 0.6;
-  font-size: 0.6rem;
+  font-size: 0.7rem;
 }
 
 .tree-node-status-dot {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
 }
 
@@ -1833,6 +1833,36 @@ a {
 
 [data-theme='dark'] .react-flow__controls-button:hover {
   background: var(--bg-surface-hover) !important;
+}
+
+/* Dark mode tree node borders */
+[data-theme='dark'] .tree-node {
+  border-color: #333;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme='dark'] .tree-node:hover {
+  border-color: rgba(99, 102, 241, 0.4);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(99, 102, 241, 0.15);
+}
+
+[data-theme='dark'] .tree-node.selected {
+  border-color: rgba(99, 102, 241, 0.6);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2), 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme='dark'] .tree-node.streaming {
+  border-color: rgba(99, 102, 241, 0.5);
+}
+
+[data-theme='dark'] .tree-node.error {
+  border-color: rgba(248, 113, 113, 0.5);
+  box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.1);
+}
+
+[data-theme='dark'] .tree-node.bookmarked {
+  border-color: rgba(251, 191, 36, 0.5);
+  box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.1);
 }
 
 /* ===== Toast notification ===== */

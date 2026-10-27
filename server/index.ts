@@ -230,12 +230,15 @@ app.post('/api/agy/query', (req, res) => {
     'X-Accel-Buffering': 'no',
   });
 
-  const agyBin = `${process.env.HOME}/.local/bin/agy`;
+  const agyBin = process.env.AGY_BIN
+    || ['/snap/bin/agy', `${process.env.HOME}/.local/bin/agy`]
+        .find((p) => { try { require('fs').accessSync(p); return true; } catch { return false; } })
+    || 'agy';
   const agyProcess = spawn(agyBin, args, {
     cwd: process.cwd(),
     env: {
       ...process.env,
-      PATH: `${process.env.HOME}/.local/bin:${process.env.HOME}/.gemini/antigravity-ide/bin:${process.env.PATH}`,
+      PATH: `/snap/bin:${process.env.HOME}/.local/bin:${process.env.HOME}/.gemini/antigravity-ide/bin:${process.env.PATH}`,
     },
     stdio: ['pipe', 'pipe', 'pipe'],
   });
