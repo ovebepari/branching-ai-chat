@@ -99,7 +99,7 @@ export function Sidebar({ onOpenSettings, onNewProject }: SidebarProps) {
           <div className="sidebar-logo-icon">
             <FolderTree size={14} />
           </div>
-          {!sidebarCollapsed && <span>DFS Chat</span>}
+          {!sidebarCollapsed && <span>Branch Chat</span>}
         </div>
         <button className="sidebar-toggle" onClick={toggleSidebar} title="Toggle sidebar">
           {sidebarCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
@@ -264,6 +264,10 @@ export function Sidebar({ onOpenSettings, onNewProject }: SidebarProps) {
               {darkMode ? 'Light Mode' : 'Dark Mode'}
               <span className="kbd" style={{ marginLeft: 'auto' }}>⌘D</span>
             </button>
+            <button className="sidebar-settings-btn" onClick={onOpenSettings}>
+              <Settings size={14} />
+              Settings
+            </button>
             <div className="sidebar-status">
               <span className={`status-dot ${statusClass}`} />
               <span>{statusLabel}</span>
@@ -271,10 +275,6 @@ export function Sidebar({ onOpenSettings, onNewProject }: SidebarProps) {
                 <span style={{ opacity: 0.6 }}>· {provider.model}</span>
               )}
             </div>
-            <button className="sidebar-settings-btn" onClick={onOpenSettings}>
-              <Settings size={14} />
-              Settings
-            </button>
           </div>
         </>
       )}

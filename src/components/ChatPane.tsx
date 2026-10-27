@@ -49,6 +49,16 @@ export function ChatPane() {
     return () => clearTimeout(timer);
   }, [toast]);
 
+  // Listen for branch-from-node event to auto-focus input
+  useEffect(() => {
+    const handler = () => {
+      textareaRef.current?.focus();
+      textareaRef.current?.setAttribute('placeholder', 'Type to branch from this node…');
+    };
+    window.addEventListener('branch-from-node', handler);
+    return () => window.removeEventListener('branch-from-node', handler);
+  }, []);
+
   const showToast = (msg: string) => setToast(msg);
 
   const handleSubmit = useCallback(async () => {
@@ -167,10 +177,34 @@ export function ChatPane() {
       <div className="chat-pane-header">
         <div className="chat-pane-header-info">
           <div className="chat-pane-title">
-            {activeNode ? activeNode.label : 'Thread'}
+            {activeNode ? activeNode.label : project?.name || 'Thread'}
           </div>
           <div className="chat-pane-subtitle">
-            {activeNode ? `Depth ${depth} · ${activeNode.children.length} branches` : 'Select or create a node'}
+            {activeNode ? (
+              <>
+                <span>Depth {depth}</span>
+                <span className="chat-header-dot">·</span>
+                <span>{thread.length} {thread.length === 1 ? 'message' : 'messages'}</span>
+                <span className="chat-header-dot">·</span>
+                <span>{activeNode.children.length} {activeNode.children.length === 1 ? 'branch' : 'branches'}</span>
+                {activeNode.createdAt && (
+                  <>
+                    <span className="chat-header-dot">·</span>
+                    <span>{new Date(activeNode.createdAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                  </>
+                )}
+              </>
+            ) : (
+              <>
+                <span>{project ? `${Object.keys(project.nodes).length} nodes` : 'Select or create a node'}</span>
+                {provider.type !== 'mock' && provider.model && (
+                  <>
+                    <span className="chat-header-dot">·</span>
+                    <span>{provider.model}</span>
+                  </>
+                )}
+              </>
+            )}
           </div>
         </div>
         <div className="chat-pane-header-actions">

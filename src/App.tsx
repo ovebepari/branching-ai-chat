@@ -20,7 +20,9 @@ function loadLayout(): LayoutSizes {
     const raw = localStorage.getItem(LAYOUT_STORAGE_KEY);
     if (raw) return JSON.parse(raw);
   } catch {}
-  return { sidebarWidth: 260, chatWidth: 440 };
+  const sidebarWidth = 260;
+  const chatWidth = Math.round((window.innerWidth - sidebarWidth) * 0.7);
+  return { sidebarWidth, chatWidth };
 }
 
 function saveLayout(layout: LayoutSizes) {
@@ -41,7 +43,12 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [layout, setLayout] = useState<LayoutSizes>(loadLayout);
-  const [resizing, setResizing] = useState<'sidebar' | 'chat' | null>(null);
+
+  // Refs for direct DOM manipulation during drag (no React re-renders)
+  const sidebarRef = useRef<HTMLDivElement>(null);
+  const chatRef = useRef<HTMLDivElement>(null);
+  const layoutRef = useRef<LayoutSizes>(layout);
+  layoutRef.current = layout;
 
   useEffect(() => {
     loadProjects();
@@ -89,58 +96,53 @@ export default function App() {
     return () => window.removeEventListener('keydown', handler);
   }, [handleNewProject, toggleDarkMode, setActiveNode, showSettings, showSearch]);
 
-  // Sidebar resize
+  // Sidebar resize — direct DOM manipulation, commit on end
   const handleSidebarResize = useCallback((delta: number) => {
-    setResizing('sidebar');
-    setLayout((prev) => ({
-      ...prev,
-      sidebarWidth: Math.max(180, Math.min(500, prev.sidebarWidth + delta)),
-    }));
+    const el = sidebarRef.current;
+    if (!el) return;
+    const cur = parseFloat(el.style.width) || layoutRef.current.sidebarWidth;
+    const next = Math.max(180, Math.min(500, cur + delta));
+    el.style.width = `${next}px`;
   }, []);
 
-  // Chat resize (drag left = wider chat, so negate delta)
   const handleChatResize = useCallback((delta: number) => {
-    setResizing('chat');
-    setLayout((prev) => ({
-      ...prev,
-      chatWidth: Math.max(280, Math.min(800, prev.chatWidth - delta)),
-    }));
+    const el = chatRef.current;
+    if (!el) return;
+    const cur = parseFloat(el.style.width) || layoutRef.current.chatWidth;
+    const maxChat = Math.round(window.innerWidth * 0.85);
+    const next = Math.max(280, Math.min(maxChat, cur - delta));
+    el.style.width = `${next}px`;
   }, []);
 
   const handleResizeEnd = useCallback(() => {
-    setResizing(null);
-    setLayout((prev) => {
-      saveLayout(prev);
-      return prev;
-    });
+    const sidebarW = sidebarRef.current ? parseFloat(sidebarRef.current.style.width) || layoutRef.current.sidebarWidth : layoutRef.current.sidebarWidth;
+    const chatW = chatRef.current ? parseFloat(chatRef.current.style.width) || layoutRef.current.chatWidth : layoutRef.current.chatWidth;
+    const next = { sidebarWidth: sidebarW, chatWidth: chatW };
+    setLayout(next);
+    saveLayout(next);
   }, []);
 
-  // Double-click on handle resets to default
   const handleSidebarReset = useCallback(() => {
-    setLayout((prev) => {
-      const next = { ...prev, sidebarWidth: 260 };
-      saveLayout(next);
-      return next;
-    });
+    if (sidebarRef.current) sidebarRef.current.style.width = '260px';
+    const next = { ...layoutRef.current, sidebarWidth: 260 };
+    setLayout(next);
+    saveLayout(next);
   }, []);
 
   const handleChatReset = useCallback(() => {
-    setLayout((prev) => {
-      const next = { ...prev, chatWidth: 440 };
-      saveLayout(next);
-      return next;
-    });
+    const chatWidth = Math.round((window.innerWidth - 260) * 0.7);
+    if (chatRef.current) chatRef.current.style.width = `${chatWidth}px`;
+    const next = { ...layoutRef.current, chatWidth };
+    setLayout(next);
+    saveLayout(next);
   }, []);
-
-  const sidebarStyle = sidebarCollapsed
-    ? undefined
-    : { width: layout.sidebarWidth };
 
   return (
     <div className="app-layout">
       <div
-        className={`sidebar-wrapper`}
-        style={sidebarStyle}
+        ref={sidebarRef}
+        className="sidebar-wrapper"
+        style={sidebarCollapsed ? undefined : { width: layout.sidebarWidth }}
       >
         <Sidebar
           onOpenSettings={() => setShowSettings(true)}
@@ -171,7 +173,8 @@ export default function App() {
           />
 
           <div
-            className={`chat-pane-wrapper ${resizing === 'chat' ? 'resizing' : ''}`}
+            ref={chatRef}
+            className="chat-pane-wrapper"
             style={{ width: layout.chatWidth }}
           >
             <ChatPane />
@@ -183,7 +186,7 @@ export default function App() {
             <div className="no-project-icon">
               <GitFork size={36} />
             </div>
-            <h2>DFS Chat UI</h2>
+            <h2>Branch Chat</h2>
             <p>
               Create a new project to start branching conversations.
               Each message becomes a node in a visual tree — fork any point

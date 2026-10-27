@@ -7,7 +7,9 @@ import {
   Trash2,
   Download,
   Copy,
+  Check,
   Star,
+  Pencil,
 } from 'lucide-react';
 
 interface ContextMenuState {
@@ -19,11 +21,15 @@ export const CustomTreeNode = memo(({ data, id }: NodeProps) => {
   const setActiveNode = useTreeStore((s) => s.setActiveNode);
   const deleteNode = useTreeStore((s) => s.deleteNode);
   const toggleBookmark = useTreeStore((s) => s.toggleBookmark);
+  const setNodeLabel = useTreeStore((s) => s.setNodeLabel);
   const getAncestorChain = useTreeStore((s) => s.getAncestorChain);
   const getActiveProject = useTreeStore((s) => s.getActiveProject);
-  const { status, label, isActive, parentId, bookmarked } = data as any;
+  const { status, label, isActive, parentId, bookmarked, createdAt } = data as any;
+
+  const timeLabel = createdAt ? new Date(createdAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
 
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const statusClass = status || 'idle';
 
@@ -50,6 +56,10 @@ export const CustomTreeNode = memo(({ data, id }: NodeProps) => {
   const handleBranch = useCallback(() => {
     setActiveNode(id);
     setContextMenu(null);
+    // Signal ChatPane to focus the input for branching
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('branch-from-node', { detail: { nodeId: id } }));
+    }, 50);
   }, [id, setActiveNode]);
 
   const handleView = useCallback(() => {
@@ -72,9 +82,21 @@ export const CustomTreeNode = memo(({ data, id }: NodeProps) => {
     const node = project?.nodes[id];
     if (node?.response) {
       navigator.clipboard.writeText(node.response);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
     }
     setContextMenu(null);
   }, [id, getActiveProject]);
+
+  const handleEditLabel = useCallback(() => {
+    const project = getActiveProject();
+    const node = project?.nodes[id];
+    const newLabel = prompt('Edit label:', node?.label || '');
+    if (newLabel !== null && newLabel.trim()) {
+      setNodeLabel(id, newLabel.trim());
+    }
+    setContextMenu(null);
+  }, [id, getActiveProject, setNodeLabel]);
 
   const handleExportBranch = useCallback(() => {
     const chain = getAncestorChain(id);
@@ -122,17 +144,24 @@ export const CustomTreeNode = memo(({ data, id }: NodeProps) => {
         <div className="tree-node-actions">
           <button
             className="tree-node-action-btn"
-            title="Branch"
-            onClick={(e) => { e.stopPropagation(); handleBranch(); }}
-          >
-            <GitBranchPlus size={12} /> Branch
-          </button>
-          <button
-            className="tree-node-action-btn"
             title="View"
             onClick={(e) => { e.stopPropagation(); handleView(); }}
           >
             <Eye size={12} /> View
+          </button>
+          <button
+            className="tree-node-action-btn"
+            title={copied ? 'Copied!' : 'Copy response'}
+            onClick={(e) => { e.stopPropagation(); handleCopyResponse(); }}
+          >
+            {copied ? <Check size={12} /> : <Copy size={12} />}
+          </button>
+          <button
+            className="tree-node-action-btn"
+            title="Edit label"
+            onClick={(e) => { e.stopPropagation(); handleEditLabel(); }}
+          >
+            <Pencil size={12} />
           </button>
           <button
             className={`tree-node-action-btn ${bookmarked ? 'active' : ''}`}
@@ -160,6 +189,7 @@ export const CustomTreeNode = memo(({ data, id }: NodeProps) => {
              statusClass === 'complete' ? 'Done' :
              statusClass === 'error' ? 'Error' : 'Pending'}
           </span>
+          {timeLabel && <span className="tree-node-time">{timeLabel}</span>}
         </div>
 
         <Handle type="source" position={Position.Bottom} />

@@ -43,6 +43,7 @@ function CodeBlock({ className, children }: { className?: string; children: stri
           borderRadius: 0,
           fontSize: '0.8125rem',
           padding: '0.75rem 1rem',
+          background: darkMode ? '#282c34' : '#f8f8f8',
         }}
       >
         {code}

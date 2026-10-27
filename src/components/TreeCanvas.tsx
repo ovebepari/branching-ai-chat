@@ -121,10 +121,12 @@ function TreeCanvasInner() {
     setEdges(layoutData.edges);
   }, [layoutData, project?.activeNodeId, setNodes, setEdges]);
 
+  const darkMode = useTreeStore((s) => s.darkMode);
+
   // Fit view when nodes change significantly
   useEffect(() => {
     if (nodes.length > 0) {
-      setTimeout(() => fitView({ padding: 0.3, duration: 300 }), 50);
+      setTimeout(() => fitView({ padding: 0.5, duration: 500 }), 50);
     }
   }, [nodes.length, fitView]);
 
@@ -159,24 +161,33 @@ function TreeCanvasInner() {
         onNodeClick={onNodeClick}
         nodeTypes={nodeTypes}
         fitView
-        fitViewOptions={{ padding: 0.3 }}
+        fitViewOptions={{ padding: 0.5, duration: 500 }}
+        defaultViewport={{ x: 0, y: 0, zoom: 0.75 }}
         proOptions={{ hideAttribution: true }}
-        minZoom={0.1}
+        minZoom={0.05}
         maxZoom={2}
         nodesDraggable={false}
         nodesConnectable={false}
         elementsSelectable={true}
+        snapToGrid
+        snapGrid={[20, 20]}
       >
-        <Background variant={BackgroundVariant.Dots} gap={24} size={1} color="#d4d1cc" />
+        <Background
+          variant={BackgroundVariant.Dots}
+          gap={16}
+          size={2}
+          color={darkMode ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.3)'}
+        />
         <Controls showInteractive={false} />
         <MiniMap
           nodeColor={(n) => {
-            if (n.data?.isActive) return '#4f46e5';
-            if (n.data?.status === 'streaming') return '#4f46e5';
-            if (n.data?.status === 'error') return '#dc2626';
-            return '#d4d1cc';
+            if (n.data?.isActive) return '#6366f1';
+            if (n.data?.status === 'streaming') return '#6366f1';
+            if (n.data?.status === 'error') return '#ef4444';
+            return darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)';
           }}
-          maskColor="rgba(250, 249, 247, 0.7)"
+          maskColor={darkMode ? 'rgba(20,20,28,0.8)' : 'rgba(250,249,247,0.8)'}
+          style={{ borderRadius: 8, border: '1px solid var(--border-light)' }}
           pannable
           zoomable
         />
