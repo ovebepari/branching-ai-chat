@@ -26,13 +26,32 @@ export function ChatPane() {
   const activeNodeId = project?.activeNodeId;
   const activeNode = activeNodeId ? project?.nodes[activeNodeId] : null;
 
+  const prevActiveNodeIdRef = useRef<string | null>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+
   // Build the thread: ancestor chain messages
   const thread = activeNodeId ? getAncestorChain(activeNodeId) : [];
 
-  // Auto-scroll to bottom
+  // Scroll behavior: scroll to the active node's message on node click,
+  // scroll to bottom only during streaming
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [thread, activeNode?.response]);
+    const nodeChanged = activeNodeId !== prevActiveNodeIdRef.current;
+    prevActiveNodeIdRef.current = activeNodeId || null;
+
+    if (nodeChanged && activeNodeId) {
+      // Node was clicked — scroll to that node's message at the top
+      const nodeEl = document.querySelector(`[data-node-id="${activeNodeId}"]`);
+      if (nodeEl) {
+        nodeEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        // Fallback: scroll to top of messages
+        messagesContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    } else if (activeNode?.status === 'streaming') {
+      // During streaming — keep scrolled to bottom
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [thread, activeNodeId, activeNode?.response, activeNode?.status]);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -229,7 +248,7 @@ export function ChatPane() {
         </div>
       </div>
 
-      <div className="chat-messages">
+      <div className="chat-messages" ref={messagesContainerRef}>
         {thread.length === 0 && !activeNode && (
           <div className="chat-empty">
             <div className="chat-empty-icon">
@@ -256,7 +275,7 @@ export function ChatPane() {
         )}
 
         {thread.map((node) => (
-          <div key={node.id}>
+          <div key={node.id} data-node-id={node.id}>
             <ChatMessage role="user" text={node.prompt} nodeId={node.id} />
             {(node.response || node.status === 'streaming') && (
               <ChatMessage
