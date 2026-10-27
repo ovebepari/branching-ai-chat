@@ -16,6 +16,7 @@ import {
   Moon,
   Download,
   Upload,
+  BarChart3,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -303,7 +304,7 @@ export function Sidebar({ onOpenSettings, onNewProject }: SidebarProps) {
             {showStats && agyStatsData && (
               <div className="sidebar-stats-panel">
                 <div className="stats-panel-header">
-                  <span>📊 Agy Status</span>
+                  <span><BarChart3 size={12} /> Agy Status</span>
                   <button className="stats-panel-close" onClick={() => setShowStats(false)}>
                     <X size={12} />
                   </button>

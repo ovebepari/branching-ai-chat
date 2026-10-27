@@ -20,7 +20,7 @@ import { CustomTreeNode } from './TreeNode';
 import { GitFork, MessageSquare } from 'lucide-react';
 
 // Layout config
-const NODE_WIDTH = 260;
+const NODE_WIDTH = 290;
 const NODE_HEIGHT = 110;
 const HORIZONTAL_GAP = 49;
 const VERTICAL_GAP = 81;

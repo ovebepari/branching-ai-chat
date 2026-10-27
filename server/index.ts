@@ -295,7 +295,7 @@ app.post('/api/agy/query', (req, res) => {
 
   args.push('-p', query);
 
-  console.log(`[agy] Spawning: agy ${args.join(' ').slice(0, 100)}...`);
+  console.log(`  🚀  [agy] Spawning: agy ${args.join(' ').slice(0, 100)}...`);
 
   // Set up SSE headers
   res.writeHead(200, {
@@ -405,7 +405,7 @@ app.post('/api/agy/query', (req, res) => {
   agyProcess.stderr.on('data', (data: Buffer) => {
     const errText = data.toString().trim();
     if (errText) {
-      console.error(`[agy stderr] ${errText}`);
+      console.error(`  ⚠️  [agy stderr] ${errText}`);
     }
   });
 
@@ -422,7 +422,7 @@ app.post('/api/agy/query', (req, res) => {
     const wasStale = agyConversationId && !fullResponse && code === 0;
     if (wasStale) {
       agyStats.totalRetries++;
-      console.log(`[agy] Stale conversation ${agyConversationId} — clearing and retrying`);
+      console.log(`  🔁  [agy] Stale conversation ${agyConversationId} — clearing and retrying`);
       // Clear the stale ID from DB
       dbApi.setAgyConversationId(projectId, '');
 
@@ -433,7 +433,7 @@ app.post('/api/agy/query', (req, res) => {
         '--model', agyModel,
         '-p', query,
       ];
-      console.log(`[agy] Retrying: agy ${retryArgs.join(' ').slice(0, 100)}...`);
+      console.log(`  🔄  [agy] Retrying: agy ${retryArgs.join(' ').slice(0, 100)}...`);
 
       const retryProcess = spawn(agyBin, retryArgs, {
         cwd: process.cwd(),
@@ -474,7 +474,7 @@ app.post('/api/agy/query', (req, res) => {
 
       retryProcess.stderr.on('data', (data: Buffer) => {
         const errText = data.toString().trim();
-        if (errText) console.error(`[agy retry stderr] ${errText}`);
+        if (errText) console.error(`  ⚠️  [agy retry stderr] ${errText}`);
       });
 
       retryProcess.on('close', (retryCode) => {
@@ -483,7 +483,7 @@ app.post('/api/agy/query', (req, res) => {
         }
         res.write('data: [DONE]\n\n');
         res.end();
-        console.log(`[agy] Retry exited with code ${retryCode}`);
+        console.log(`  🔄  [agy] Retry exited with code ${retryCode}`);
       });
 
       retryProcess.on('error', (err) => {
@@ -504,14 +504,14 @@ app.post('/api/agy/query', (req, res) => {
     }
     res.write('data: [DONE]\n\n');
     res.end();
-    console.log(`[agy] Process exited with code ${code}`);
+    console.log(`  ✅  [agy] Process exited with code ${code}`);
   });
 
   agyProcess.on('error', (err) => {
     agyDone = true;
     agyStats.activeRequests = Math.max(0, agyStats.activeRequests - 1);
     agyStats.errors++;
-    console.error(`[agy] Spawn error: ${err.message}`);
+    console.error(`  ❌  [agy] Spawn error: ${err.message}`);
     res.write(`data: ${JSON.stringify({
       type: 'error',
       error: `Failed to spawn agy: ${err.message}`,
@@ -524,7 +524,7 @@ app.post('/api/agy/query', (req, res) => {
   res.on('close', () => {
     if (!agyDone && !agyProcess.killed) {
       agyProcess.kill('SIGTERM');
-      console.log('[agy] Client disconnected, killed agy process');
+      console.log('  🔌  [agy] Client disconnected, killed agy process');
     }
   });
 });

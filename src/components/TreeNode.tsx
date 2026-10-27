@@ -252,7 +252,7 @@ export const CustomTreeNode = memo(({ data, id }: NodeProps) => {
             )}
             {(tokensIn || tokensOut) && (
               <span className="tree-node-badge token-badge" title={`In: ${(tokensIn || 0).toLocaleString()} · Out: ${(tokensOut || 0).toLocaleString()}`}>
-                ⚡ {((tokensIn || 0) + (tokensOut || 0)).toLocaleString()}
+                <Zap size={9} /> {((tokensIn || 0) + (tokensOut || 0)).toLocaleString()}
               </span>
             )}
           </div>

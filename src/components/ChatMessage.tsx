@@ -7,7 +7,7 @@ import 'katex/dist/katex.min.css';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { Copy, Check, Clock, GitBranch, Star, Hash, Pencil } from 'lucide-react';
+import { Copy, Check, Clock, GitBranch, Star, Hash, Pencil, CheckCircle, Zap, XCircle } from 'lucide-react';
 import { useTreeStore } from '../store/useTreeStore';
 
 interface ChatMessageProps {
@@ -116,13 +116,13 @@ function UserCard({ text, nodeId, label, createdAt, depth, branchCount, bookmark
             </span>
           )}
           {status === 'complete' && (
-            <span className="user-card-chip complete">✓ Done</span>
+            <span className="user-card-chip complete"><CheckCircle size={9} /> Done</span>
           )}
           {status === 'streaming' && (
-            <span className="user-card-chip streaming">⚡ Streaming</span>
+            <span className="user-card-chip streaming"><Zap size={9} /> Streaming</span>
           )}
           {status === 'error' && (
-            <span className="user-card-chip error">✕ Error</span>
+            <span className="user-card-chip error"><XCircle size={9} /> Error</span>
           )}
         </div>
       </div>
