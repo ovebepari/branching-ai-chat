@@ -747,38 +747,25 @@ a {
   background: var(--text-tertiary);
 }
 
-/* Node hover actions */
-.tree-node-actions {
-  position: absolute;
-  top: -44px;
-  left: 50%;
-  transform: translateX(-50%);
+/* NodeToolbar (React Flow built-in) */
+.tree-node-toolbar {
   display: flex;
   gap: 2px;
   background: var(--bg-surface);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-md);
   padding: 5px 6px;
-  padding-bottom: 13px;
-  margin-bottom: -8px;
   box-shadow: var(--shadow-lg);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity var(--transition-fast);
   z-index: 10;
 }
 
-.tree-node:hover .tree-node-actions {
-  opacity: 1;
-  pointer-events: all;
-}
-
 .tree-node-action-btn {
-  padding: 5px 8px;
+  padding: 6px;
   border-radius: var(--radius-sm);
   font-size: var(--text-xs);
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 4px;
   color: var(--text-secondary);
   transition: all var(--transition-fast);
@@ -788,11 +775,122 @@ a {
 .tree-node-action-btn:hover {
   background: var(--accent-primary-light);
   color: var(--accent-primary);
+  transform: scale(1.1);
+}
+
+.tree-node-action-btn.active {
+  color: var(--accent-warning);
 }
 
 .tree-node-action-btn.danger:hover {
   background: var(--accent-danger-light);
   color: var(--accent-danger);
+}
+
+/* Node content layout */
+.tree-node-content {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Response preview */
+.tree-node-preview {
+  font-size: 0.6rem;
+  color: var(--text-tertiary);
+  line-height: 1.35;
+  margin-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  opacity: 0.7;
+}
+
+.tree-node-preview.streaming-text {
+  color: var(--accent-primary);
+  opacity: 1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 500;
+  animation: pulse-text 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-text {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Streaming progress bar */
+.tree-node-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--accent-primary-light);
+  border-radius: 0 0 9px 9px;
+  overflow: hidden;
+}
+
+.tree-node-progress-bar {
+  height: 100%;
+  width: 40%;
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-primary-hover));
+  border-radius: 3px;
+  animation: progress-slide 1.5s ease-in-out infinite;
+}
+
+@keyframes progress-slide {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(350%); }
+}
+
+/* Node footer */
+.tree-node-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+}
+
+/* Badges */
+.tree-node-badges {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.tree-node-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.575rem;
+  padding: 1px 5px;
+  border-radius: 10px;
+  background: var(--accent-primary-light);
+  color: var(--accent-primary);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* Styled handles */
+.tree-node-handle {
+  width: 8px !important;
+  height: 8px !important;
+  background: var(--border-medium) !important;
+  border: 2px solid var(--bg-surface) !important;
+  transition: all 0.2s ease !important;
+}
+
+.tree-node:hover .tree-node-handle {
+  background: var(--accent-primary) !important;
+  box-shadow: 0 0 6px rgba(99, 102, 241, 0.3);
+}
+
+.tree-node.selected .tree-node-handle {
+  background: var(--accent-primary) !important;
 }
 
 /* React Flow edges */

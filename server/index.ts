@@ -314,6 +314,83 @@ app.post('/api/agy/query', (req, res) => {
 
   agyProcess.on('close', (code) => {
     agyDone = true;
+
+    // Detect stale conversation: had an ID, exited OK, but never got an init event
+    const wasStale = agyConversationId && !fullResponse && code === 0;
+    if (wasStale) {
+      console.log(`[agy] Stale conversation ${agyConversationId} — clearing and retrying`);
+      // Clear the stale ID from DB
+      dbApi.setAgyConversationId(projectId, '');
+
+      // Retry as a fresh conversation
+      const retryArgs: string[] = [
+        '--output-format', 'stream-json',
+        '--dangerously-skip-permissions',
+        '--model', agyModel,
+        '-p', query,
+      ];
+      console.log(`[agy] Retrying: agy ${retryArgs.join(' ').slice(0, 100)}...`);
+
+      const retryProcess = spawn(agyBin, retryArgs, {
+        cwd: process.cwd(),
+        env: {
+          ...process.env,
+          PATH: `/snap/bin:${process.env.HOME}/.local/bin:${process.env.HOME}/.gemini/antigravity-ide/bin:${process.env.PATH}`,
+        },
+        stdio: ['pipe', 'pipe', 'pipe'],
+      });
+
+      let retryBuffer = '';
+      retryProcess.stdout.on('data', (data: Buffer) => {
+        retryBuffer += data.toString();
+        const lines = retryBuffer.split('\n');
+        retryBuffer = lines.pop() || '';
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          try {
+            const json = JSON.parse(line);
+            if (json.event === 'init' && json.conversation_id) {
+              dbApi.setAgyConversationId(projectId, json.conversation_id);
+              if (agyModel) dbApi.setAgyModel(projectId, agyModel);
+              res.write(`data: ${JSON.stringify({ type: 'init', conversationId: json.conversation_id })}\n\n`);
+            }
+            if (json.event === 'step_update' && json.step_update?.step_type === 'agent_response') {
+              const delta = json.step_update.text_delta;
+              if (delta) {
+                res.write(`data: ${JSON.stringify({ type: 'delta', text: delta })}\n\n`);
+              }
+            }
+            if (json.event === 'result') {
+              res.write(`data: ${JSON.stringify({ type: 'done', conversationId: json.conversation_id, usage: json.result?.usage })}\n\n`);
+            }
+          } catch { /* skip */ }
+        }
+      });
+
+      retryProcess.stderr.on('data', (data: Buffer) => {
+        const errText = data.toString().trim();
+        if (errText) console.error(`[agy retry stderr] ${errText}`);
+      });
+
+      retryProcess.on('close', (retryCode) => {
+        if (retryCode !== 0 && retryCode !== null) {
+          res.write(`data: ${JSON.stringify({ type: 'error', error: `agy retry exited with code ${retryCode}` })}\n\n`);
+        }
+        res.write('data: [DONE]\n\n');
+        res.end();
+        console.log(`[agy] Retry exited with code ${retryCode}`);
+      });
+
+      retryProcess.on('error', (err) => {
+        res.write(`data: ${JSON.stringify({ type: 'error', error: `Retry spawn failed: ${err.message}` })}\n\n`);
+        res.write('data: [DONE]\n\n');
+        res.end();
+      });
+
+      return; // Don't end the response — retry handles it
+    }
+
     if (code !== 0 && code !== null) {
       res.write(`data: ${JSON.stringify({
         type: 'error',

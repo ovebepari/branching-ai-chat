@@ -21,7 +21,7 @@ import { GitFork, MessageSquare } from 'lucide-react';
 
 // Layout config
 const NODE_WIDTH = 260;
-const NODE_HEIGHT = 90;
+const NODE_HEIGHT = 110;
 const HORIZONTAL_GAP = 49;
 const VERTICAL_GAP = 81;
 
@@ -66,12 +66,32 @@ function computeLayout(
     result.nodes.push(...childResult.nodes);
     result.edges.push(...childResult.edges);
 
+    const isStreaming = nodesMap[childId]?.status === 'streaming';
+    const isComplete = nodesMap[childId]?.status === 'complete';
+    const isError = nodesMap[childId]?.status === 'error';
+
     result.edges.push({
       id: `${nodeId}->${childId}`,
       source: nodeId,
       target: childId,
       type: 'smoothstep',
-      animated: nodesMap[childId]?.status === 'streaming',
+      animated: isStreaming,
+      style: {
+        stroke: isError ? 'var(--accent-danger)' :
+                isStreaming ? 'var(--accent-primary)' :
+                isComplete ? 'var(--accent-success)' :
+                undefined,
+        strokeWidth: isStreaming ? 2.5 : 1.5,
+        opacity: isComplete ? 0.7 : 1,
+      },
+      markerEnd: {
+        type: 'arrowclosed' as any,
+        width: 16,
+        height: 16,
+        color: isError ? 'var(--accent-danger)' :
+               isStreaming ? 'var(--accent-primary)' :
+               'var(--border-medium)',
+      },
     });
   }
 
