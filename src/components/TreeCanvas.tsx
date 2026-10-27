@@ -20,10 +20,10 @@ import { CustomTreeNode } from './TreeNode';
 import { GitFork, MessageSquare } from 'lucide-react';
 
 // Layout config
-const NODE_WIDTH = 220;
-const NODE_HEIGHT = 80;
-const HORIZONTAL_GAP = 60;
-const VERTICAL_GAP = 100;
+const NODE_WIDTH = 260;
+const NODE_HEIGHT = 90;
+const HORIZONTAL_GAP = 49;
+const VERTICAL_GAP = 81;
 
 const nodeTypes: NodeTypes = {
   treeNode: CustomTreeNode,
@@ -126,7 +126,7 @@ function TreeCanvasInner() {
   // Fit view when nodes change significantly
   useEffect(() => {
     if (nodes.length > 0) {
-      setTimeout(() => fitView({ padding: 0.5, duration: 500 }), 50);
+      setTimeout(() => fitView({ padding: 0.5, duration: 500, maxZoom: 1.0 }), 50);
     }
   }, [nodes.length, fitView]);
 
@@ -161,8 +161,8 @@ function TreeCanvasInner() {
         onNodeClick={onNodeClick}
         nodeTypes={nodeTypes}
         fitView
-        fitViewOptions={{ padding: 0.5, duration: 500 }}
-        defaultViewport={{ x: 0, y: 0, zoom: 0.75 }}
+        fitViewOptions={{ padding: 0.5, duration: 500, maxZoom: 1.0 }}
+        defaultViewport={{ x: 0, y: 0, zoom: 1.0 }}
         proOptions={{ hideAttribution: true }}
         minZoom={0.05}
         maxZoom={2}

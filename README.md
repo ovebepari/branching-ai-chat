@@ -4,17 +4,57 @@ An interactive branching conversation tree interface that replaces linear chat w
 
 ![Layout](https://img.shields.io/badge/Layout-Three_Panel-4f46e5) ![Backend](https://img.shields.io/badge/Backend-SQLite-059669) ![AI](https://img.shields.io/badge/AI-Antigravity_CLI-7c3aed)
 
+## Prerequisites
+
+### Node.js (v20+)
+
+**Ubuntu / Debian:**
+
+```bash
+# Install Node.js 22.x LTS via NodeSource
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# Verify installation
+node --version   # v22.x.x
+npm --version    # 10.x.x
+```
+
+<details>
+<summary>Alternative: install via <code>nvm</code> (no sudo required)</summary>
+
+```bash
+# Install nvm
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+source ~/.bashrc
+
+# Install and use Node.js LTS
+nvm install --lts
+nvm use --lts
+```
+
+</details>
+
 ## Quick Start
 
 ```bash
 # Install dependencies
 npm install
 
+# Option 1: Start both servers with one command
+./start.sh
+
+# Option 2: Start manually in separate terminals
 # Terminal 1: Start the API server (SQLite + agy proxy)
 npm run server
-
 # Terminal 2: Start the frontend dev server
 npm run dev
+```
+
+To stop everything (if started via `start.sh`):
+
+```bash
+./stop.sh
 ```
 
 Open **http://localhost:5173/**
