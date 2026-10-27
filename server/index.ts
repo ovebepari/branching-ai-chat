@@ -9,6 +9,81 @@ const PORT = 3001;
 app.use(cors());
 app.use(express.json());
 
+// ==================== Agy Session Stats ====================
+const serverStartTime = Date.now();
+
+interface AgySessionStats {
+  totalRequests: number;
+  activeRequests: number;
+  totalTokensIn: number;
+  totalTokensOut: number;
+  totalRetries: number;
+  errors: number;
+  lastRequestAt: number | null;
+  sessionsByProject: Record<string, {
+    conversationId: string | null;
+    requestCount: number;
+    lastModel: string;
+    lastRequestAt: number;
+  }>;
+}
+
+const agyStats: AgySessionStats = {
+  totalRequests: 0,
+  activeRequests: 0,
+  totalTokensIn: 0,
+  totalTokensOut: 0,
+  totalRetries: 0,
+  errors: 0,
+  lastRequestAt: null,
+  sessionsByProject: {},
+};
+
+function formatUptime(ms: number): string {
+  const secs = Math.floor(ms / 1000);
+  const mins = Math.floor(secs / 60);
+  const hrs = Math.floor(mins / 60);
+  if (hrs > 0) return `${hrs}h ${mins % 60}m ${secs % 60}s`;
+  if (mins > 0) return `${mins}m ${secs % 60}s`;
+  return `${secs}s`;
+}
+
+function logAgyStats() {
+  const now = Date.now();
+  const uptime = formatUptime(now - serverStartTime);
+  const projects = dbApi.listProjects() as any[];
+  const projectsWithAgy = projects.filter((p: any) => p.agy_conversation_id);
+
+  const divider = '─'.repeat(52);
+  console.log(`\n${divider}`);
+  console.log(`  📊  AGY STATUS REPORT  ·  ${new Date().toLocaleString()}`);
+  console.log(divider);
+  console.log(`  ⏱  Uptime:           ${uptime}`);
+  console.log(`  📦  Total requests:   ${agyStats.totalRequests}`);
+  console.log(`  🔄  Active now:       ${agyStats.activeRequests}`);
+  console.log(`  🔁  Stale retries:    ${agyStats.totalRetries}`);
+  console.log(`  ❌  Errors:           ${agyStats.errors}`);
+  console.log(`  📥  Tokens in:        ${agyStats.totalTokensIn.toLocaleString()}`);
+  console.log(`  📤  Tokens out:       ${agyStats.totalTokensOut.toLocaleString()}`);
+  console.log(`  🕐  Last request:     ${agyStats.lastRequestAt ? formatUptime(now - agyStats.lastRequestAt) + ' ago' : 'never'}`);
+  console.log(divider);
+  console.log(`  💬  Projects: ${projects.length} total, ${projectsWithAgy.length} with active agy sessions`);
+
+  if (projectsWithAgy.length > 0) {
+    for (const p of projectsWithAgy) {
+      const stats = agyStats.sessionsByProject[p.id];
+      const reqCount = stats?.requestCount || 0;
+      const model = stats?.lastModel || p.agy_model || '?';
+      console.log(`       ├─ ${p.name || p.id}: ${reqCount} req · ${model} · ${p.agy_conversation_id?.slice(0, 8)}…`);
+    }
+  }
+
+  console.log(`${divider}\n`);
+}
+
+// Log stats every 5 minutes
+setInterval(logAgyStats, 5 * 60 * 1000);
+
 // ==================== Projects ====================
 
 // List all projects
@@ -245,6 +320,22 @@ app.post('/api/agy/query', (req, res) => {
 
   let agyDone = false;
 
+  // Track stats
+  agyStats.totalRequests++;
+  agyStats.activeRequests++;
+  agyStats.lastRequestAt = Date.now();
+  if (!agyStats.sessionsByProject[projectId]) {
+    agyStats.sessionsByProject[projectId] = {
+      conversationId: agyConversationId || null,
+      requestCount: 0,
+      lastModel: agyModel,
+      lastRequestAt: Date.now(),
+    };
+  }
+  agyStats.sessionsByProject[projectId].requestCount++;
+  agyStats.sessionsByProject[projectId].lastModel = agyModel;
+  agyStats.sessionsByProject[projectId].lastRequestAt = Date.now();
+
   let buffer = '';
   let conversationIdCaptured = agyConversationId || '';
   let fullResponse = '';
@@ -293,10 +384,16 @@ app.post('/api/agy/query', (req, res) => {
 
         // Result event — final
         if (json.event === 'result') {
+          // Capture token usage
+          const usage = json.result?.usage;
+          if (usage) {
+            agyStats.totalTokensIn += usage.input_tokens || usage.prompt_tokens || 0;
+            agyStats.totalTokensOut += usage.output_tokens || usage.completion_tokens || 0;
+          }
           res.write(`data: ${JSON.stringify({
             type: 'done',
             conversationId: conversationIdCaptured,
-            usage: json.result?.usage,
+            usage,
           })}\n\n`);
         }
       } catch {
@@ -314,10 +411,17 @@ app.post('/api/agy/query', (req, res) => {
 
   agyProcess.on('close', (code) => {
     agyDone = true;
+    agyStats.activeRequests = Math.max(0, agyStats.activeRequests - 1);
+
+    // Update session conversation ID
+    if (conversationIdCaptured && agyStats.sessionsByProject[projectId]) {
+      agyStats.sessionsByProject[projectId].conversationId = conversationIdCaptured;
+    }
 
     // Detect stale conversation: had an ID, exited OK, but never got an init event
     const wasStale = agyConversationId && !fullResponse && code === 0;
     if (wasStale) {
+      agyStats.totalRetries++;
       console.log(`[agy] Stale conversation ${agyConversationId} — clearing and retrying`);
       // Clear the stale ID from DB
       dbApi.setAgyConversationId(projectId, '');
@@ -392,6 +496,7 @@ app.post('/api/agy/query', (req, res) => {
     }
 
     if (code !== 0 && code !== null) {
+      agyStats.errors++;
       res.write(`data: ${JSON.stringify({
         type: 'error',
         error: `agy process exited with code ${code}`,
@@ -404,6 +509,8 @@ app.post('/api/agy/query', (req, res) => {
 
   agyProcess.on('error', (err) => {
     agyDone = true;
+    agyStats.activeRequests = Math.max(0, agyStats.activeRequests - 1);
+    agyStats.errors++;
     console.error(`[agy] Spawn error: ${err.message}`);
     res.write(`data: ${JSON.stringify({
       type: 'error',
@@ -519,8 +626,20 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: Date.now() });
 });
 
+app.get('/api/agy/stats', (_req, res) => {
+  const now = Date.now();
+  res.json({
+    uptime: formatUptime(now - serverStartTime),
+    uptimeMs: now - serverStartTime,
+    ...agyStats,
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`\n  🗄️  DFS Chat API server running on http://localhost:${PORT}`);
   console.log(`  📁  Database: dfs-chat.db`);
-  console.log(`  🤖  Antigravity (agy) integration enabled\n`);
+  console.log(`  🤖  Antigravity (agy) integration enabled`);
+  console.log(`  📊  Stats logging every 5 minutes\n`);
+  // Log initial stats on startup
+  setTimeout(logAgyStats, 1000);
 });
