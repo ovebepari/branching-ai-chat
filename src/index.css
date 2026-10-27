@@ -687,9 +687,10 @@ a {
 }
 
 .tree-node-label {
-  font-size: 0.925rem;
+  font-size: 1.02rem;
   font-weight: 600;
   color: var(--text-primary);
+  opacity: 0.88;
   line-height: 1.35;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -704,8 +705,8 @@ a {
   align-items: center;
   gap: var(--space-1);
   margin-top: 5px;
-  font-size: 0.75rem;
-  color: var(--text-tertiary);
+  font-size: 0.825rem;
+  color: var(--text-secondary);
 }
 
 .tree-node-status {
@@ -718,7 +719,7 @@ a {
 .tree-node-time {
   margin-left: auto;
   opacity: 0.6;
-  font-size: 0.7rem;
+  font-size: 0.77rem;
 }
 
 .tree-node-status-dot {
@@ -795,8 +796,8 @@ a {
 
 /* Response preview */
 .tree-node-preview {
-  font-size: 0.6rem;
-  color: var(--text-tertiary);
+  font-size: 0.66rem;
+  color: var(--text-secondary);
   line-height: 1.35;
   margin-top: 4px;
   overflow: hidden;
@@ -866,7 +867,7 @@ a {
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  font-size: 0.575rem;
+  font-size: 0.635rem;
   padding: 1px 5px;
   border-radius: 10px;
   background: var(--accent-primary-light);
