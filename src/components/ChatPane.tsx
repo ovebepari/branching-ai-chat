@@ -2,7 +2,10 @@ import { useRef, useEffect, useState, useCallback } from 'react';
 import { useTreeStore } from '../store/useTreeStore';
 import { streamQuery, generateLabel } from '../services/api';
 import { ChatMessage } from './ChatMessage';
-import { MessageSquare, GitBranch, Minimize2, ArrowUp, Download } from 'lucide-react';
+import {
+  MessageSquare, GitBranch, Minimize2, ArrowUp, Download,
+  Star, Copy, ArrowUpToLine, GitBranchPlus, Trash2, Check,
+} from 'lucide-react';
 
 export function ChatPane() {
   const project = useTreeStore((s) => s.getActiveProject());
@@ -15,11 +18,15 @@ export function ChatPane() {
   const compressBranch = useTreeStore((s) => s.compressBranch);
   const getThreadHistory = useTreeStore((s) => s.getThreadHistory);
   const getAncestorChain = useTreeStore((s) => s.getAncestorChain);
+  const toggleBookmark = useTreeStore((s) => s.toggleBookmark);
+  const deleteNode = useTreeStore((s) => s.deleteNode);
+  const setActiveNode = useTreeStore((s) => s.setActiveNode);
   const provider = useTreeStore((s) => s.provider);
 
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [toast, setToast] = useState('');
+  const [copied, setCopied] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -227,22 +234,92 @@ export function ChatPane() {
           </div>
         </div>
         <div className="chat-pane-header-actions">
+          {/* Scroll to top */}
+          {thread.length > 1 && (
+            <button
+              className="chat-pane-header-btn"
+              onClick={() => messagesContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })}
+              title="Scroll to top"
+            >
+              <ArrowUpToLine size={14} />
+            </button>
+          )}
+
+          {/* Copy full thread */}
+          {thread.length > 0 && (
+            <button
+              className={`chat-pane-header-btn ${copied ? 'copied' : ''}`}
+              onClick={() => {
+                const text = thread.map(n => `User: ${n.prompt}\n\nAI: ${n.response || '(no response)'}`).join('\n\n---\n\n');
+                navigator.clipboard.writeText(text);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 1500);
+              }}
+              title={copied ? 'Copied!' : 'Copy full thread'}
+            >
+              {copied ? <Check size={14} /> : <Copy size={14} />}
+            </button>
+          )}
+
+          {/* Bookmark toggle */}
+          {activeNodeId && (
+            <button
+              className={`chat-pane-header-btn ${activeNode?.bookmarked ? 'active' : ''}`}
+              onClick={() => toggleBookmark(activeNodeId)}
+              title={activeNode?.bookmarked ? 'Remove bookmark' : 'Bookmark this node'}
+            >
+              <Star size={14} fill={activeNode?.bookmarked ? 'currentColor' : 'none'} />
+            </button>
+          )}
+
+          {/* Export thread */}
           {thread.length > 0 && (
             <button
               className="chat-pane-header-btn export-btn"
               onClick={handleExport}
               title="Export thread as Markdown"
             >
-              <Download size={14} /> Export
+              <Download size={14} />
             </button>
           )}
+
+          {/* Branch from here */}
+          {activeNodeId && (
+            <button
+              className="chat-pane-header-btn"
+              onClick={() => {
+                textareaRef.current?.focus();
+                window.dispatchEvent(new CustomEvent('branch-from-node', { detail: { nodeId: activeNodeId } }));
+              }}
+              title="Branch from this node"
+            >
+              <GitBranchPlus size={14} />
+            </button>
+          )}
+
+          {/* Compress */}
           {hasChildren && (
             <button
               className="chat-pane-header-btn"
               onClick={handleCompress}
               title="Compress this branch"
             >
-              <Minimize2 size={16} />
+              <Minimize2 size={14} />
+            </button>
+          )}
+
+          {/* Prune branch */}
+          {activeNodeId && activeNode?.parentId && (
+            <button
+              className="chat-pane-header-btn danger"
+              onClick={() => {
+                if (confirm('Delete this node and all its children?')) {
+                  deleteNode(activeNodeId);
+                }
+              }}
+              title="Prune this branch"
+            >
+              <Trash2 size={14} />
             </button>
           )}
         </div>

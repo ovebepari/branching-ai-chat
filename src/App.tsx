@@ -162,7 +162,13 @@ export default function App() {
 
       {activeProjectId ? (
         <div className="main-content">
-          <TreeCanvas />
+          <div
+            ref={chatRef}
+            className="chat-pane-wrapper"
+            style={{ width: layout.chatWidth }}
+          >
+            <ChatPane />
+          </div>
 
           {/* Chat resize handle */}
           <ResizeHandle
@@ -172,13 +178,7 @@ export default function App() {
             onDoubleClick={handleChatReset}
           />
 
-          <div
-            ref={chatRef}
-            className="chat-pane-wrapper"
-            style={{ width: layout.chatWidth }}
-          >
-            <ChatPane />
-          </div>
+          <TreeCanvas />
         </div>
       ) : (
         <div className="main-content">

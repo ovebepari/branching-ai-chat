@@ -1035,6 +1035,19 @@ a {
   color: var(--text-primary);
 }
 
+.chat-pane-header-btn.active {
+  color: var(--accent-warning);
+}
+
+.chat-pane-header-btn.copied {
+  color: var(--accent-success);
+}
+
+.chat-pane-header-btn.danger:hover {
+  color: var(--accent-danger);
+  background: var(--accent-danger-light);
+}
+
 /* Chat messages */
 .chat-messages {
   flex: 1;
