@@ -1,0 +1,8 @@
+node_modules/
+dist/
+dfs-chat.db
+dfs-chat.db-wal
+dfs-chat.db-shm
+.vite/
+*.log
+.DS_Store
