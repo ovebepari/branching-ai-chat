@@ -1,5 +1,5 @@
-import { memo, useState, useEffect, useCallback } from 'react';
-import { Handle, Position, NodeToolbar, type NodeProps } from '@xyflow/react';
+import { memo, useState, useEffect, useCallback, useRef } from 'react';
+import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { useTreeStore } from '../store/useTreeStore';
 import {
   GitBranchPlus,
@@ -12,12 +12,8 @@ import {
   Pencil,
   MessageSquare,
   Zap,
+  MoreHorizontal,
 } from 'lucide-react';
-
-interface ContextMenuState {
-  x: number;
-  y: number;
-}
 
 export const CustomTreeNode = memo(({ data, id }: NodeProps) => {
   const setActiveNode = useTreeStore((s) => s.setActiveNode);
@@ -30,9 +26,10 @@ export const CustomTreeNode = memo(({ data, id }: NodeProps) => {
 
   const timeLabel = createdAt ? new Date(createdAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
 
-  const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const statusClass = status || 'idle';
   const childCount = (childIds || []).length;
@@ -42,48 +39,49 @@ export const CustomTreeNode = memo(({ data, id }: NodeProps) => {
     ? response.replace(/[#*_`>\n]/g, '').trim().slice(0, 80) + (response.length > 80 ? '…' : '')
     : '';
 
+  // Close menu on outside click or escape
   useEffect(() => {
-    if (!contextMenu) return;
-    const handleClose = () => setContextMenu(null);
+    if (!menuOpen) return;
+    const handleClose = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setContextMenu(null);
+      if (e.key === 'Escape') setMenuOpen(false);
     };
-    window.addEventListener('click', handleClose);
-    window.addEventListener('keydown', handleKey);
+    document.addEventListener('mousedown', handleClose);
+    document.addEventListener('keydown', handleKey);
     return () => {
-      window.removeEventListener('click', handleClose);
-      window.removeEventListener('keydown', handleKey);
+      document.removeEventListener('mousedown', handleClose);
+      document.removeEventListener('keydown', handleKey);
     };
-  }, [contextMenu]);
+  }, [menuOpen]);
 
-  const handleContextMenu = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setContextMenu({ x: e.clientX, y: e.clientY });
-  }, []);
+  const closeMenu = useCallback(() => setMenuOpen(false), []);
 
   const handleBranch = useCallback(() => {
     setActiveNode(id);
-    setContextMenu(null);
+    closeMenu();
     setTimeout(() => {
       window.dispatchEvent(new CustomEvent('branch-from-node', { detail: { nodeId: id } }));
     }, 50);
-  }, [id, setActiveNode]);
+  }, [id, setActiveNode, closeMenu]);
 
   const handleView = useCallback(() => {
     setActiveNode(id);
-    setContextMenu(null);
-  }, [id, setActiveNode]);
+    closeMenu();
+  }, [id, setActiveNode, closeMenu]);
 
   const handleDelete = useCallback(() => {
     deleteNode(id);
-    setContextMenu(null);
-  }, [id, deleteNode]);
+    closeMenu();
+  }, [id, deleteNode, closeMenu]);
 
   const handleToggleBookmark = useCallback(() => {
     toggleBookmark(id);
-    setContextMenu(null);
-  }, [id, toggleBookmark]);
+    closeMenu();
+  }, [id, toggleBookmark, closeMenu]);
 
   const handleCopyResponse = useCallback(() => {
     const project = getActiveProject();
@@ -93,8 +91,8 @@ export const CustomTreeNode = memo(({ data, id }: NodeProps) => {
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     }
-    setContextMenu(null);
-  }, [id, getActiveProject]);
+    closeMenu();
+  }, [id, getActiveProject, closeMenu]);
 
   const handleEditLabel = useCallback(() => {
     const project = getActiveProject();
@@ -103,8 +101,8 @@ export const CustomTreeNode = memo(({ data, id }: NodeProps) => {
     if (newLabel !== null && newLabel.trim()) {
       setNodeLabel(id, newLabel.trim());
     }
-    setContextMenu(null);
-  }, [id, getActiveProject, setNodeLabel]);
+    closeMenu();
+  }, [id, getActiveProject, setNodeLabel, closeMenu]);
 
   const handleExportBranch = useCallback(() => {
     const chain = getAncestorChain(id);
@@ -130,175 +128,136 @@ export const CustomTreeNode = memo(({ data, id }: NodeProps) => {
     a.download = `${projectName.replace(/[^a-zA-Z0-9]/g, '_')}_branch.md`;
     a.click();
     URL.revokeObjectURL(url);
-    setContextMenu(null);
-  }, [id, getAncestorChain, getActiveProject]);
+    closeMenu();
+  }, [id, getAncestorChain, getActiveProject, closeMenu]);
 
   return (
-    <>
-      {/* NodeToolbar — React Flow's built-in positioned toolbar */}
-      <NodeToolbar
-        isVisible={isHovered}
-        position={Position.Top}
-        offset={0}
-        className="tree-node-toolbar"
-      >
-        <button
-          className="tree-node-action-btn"
-          title="Branch"
-          onClick={(e) => { e.stopPropagation(); handleBranch(); }}
-        >
-          <GitBranchPlus size={13} />
-        </button>
-        <button
-          className="tree-node-action-btn"
-          title="View"
-          onClick={(e) => { e.stopPropagation(); handleView(); }}
-        >
-          <Eye size={13} />
-        </button>
-        <button
-          className="tree-node-action-btn"
-          title={copied ? 'Copied!' : 'Copy response'}
-          onClick={(e) => { e.stopPropagation(); handleCopyResponse(); }}
-        >
-          {copied ? <Check size={13} /> : <Copy size={13} />}
-        </button>
-        <button
-          className="tree-node-action-btn"
-          title="Edit label"
-          onClick={(e) => { e.stopPropagation(); handleEditLabel(); }}
-        >
-          <Pencil size={13} />
-        </button>
-        <button
-          className={`tree-node-action-btn ${bookmarked ? 'active' : ''}`}
-          title={bookmarked ? 'Remove bookmark' : 'Bookmark'}
-          onClick={(e) => { e.stopPropagation(); handleToggleBookmark(); }}
-        >
-          <Star size={13} fill={bookmarked ? 'currentColor' : 'none'} />
-        </button>
-        {parentId && (
-          <button
-            className="tree-node-action-btn danger"
-            title="Prune"
-            onClick={(e) => { e.stopPropagation(); handleDelete(); }}
-          >
-            <Trash2 size={13} />
-          </button>
-        )}
-      </NodeToolbar>
+    <div
+      className={`tree-node ${isActive ? 'selected' : ''} ${statusClass} ${bookmarked ? 'bookmarked' : ''}`}
+      onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); setMenuOpen(true); }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <Handle type="target" position={Position.Top} className="tree-node-handle" />
 
-      <div
-        className={`tree-node ${isActive ? 'selected' : ''} ${statusClass} ${bookmarked ? 'bookmarked' : ''}`}
-        onContextMenu={handleContextMenu}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
-        <Handle type="target" position={Position.Top} className="tree-node-handle" />
-
-        {/* Bookmark badge */}
-        {bookmarked && (
-          <div className="tree-node-bookmark" title="Bookmarked">
-            <Star size={10} fill="currentColor" />
-          </div>
-        )}
-
-        {/* Streaming progress bar */}
-        {statusClass === 'streaming' && (
-          <div className="tree-node-progress">
-            <div className="tree-node-progress-bar" />
-          </div>
-        )}
-
-        {/* Node content */}
-        <div className="tree-node-content">
-          <div className="tree-node-label">{label}</div>
-
-          {/* Response preview snippet */}
-          {responsePreview && statusClass !== 'streaming' && (
-            <div className="tree-node-preview">{responsePreview}</div>
-          )}
-
-          {statusClass === 'streaming' && (
-            <div className="tree-node-preview streaming-text">
-              <Zap size={10} /> Generating response…
-            </div>
-          )}
-        </div>
-
-        {/* Footer: status + meta */}
-        <div className="tree-node-footer">
-          <div className="tree-node-meta">
-            <span className="tree-node-status">
-              <span className={`tree-node-status-dot ${statusClass}`} />
-              {statusClass === 'streaming' ? 'Streaming…' :
-               statusClass === 'complete' ? 'Done' :
-               statusClass === 'error' ? 'Error' : 'Pending'}
-            </span>
-            {timeLabel && <span className="tree-node-time">{timeLabel}</span>}
-          </div>
-
-          {/* Badges */}
-          <div className="tree-node-badges">
-            {childCount > 0 && (
-              <span className="tree-node-badge" title={`${childCount} branch${childCount > 1 ? 'es' : ''}`}>
-                <GitBranchPlus size={10} /> {childCount}
-              </span>
-            )}
-            {response && (
-              <span className="tree-node-badge" title="Has response">
-                <MessageSquare size={10} />
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Token usage row */}
-        {(tokensIn || tokensOut) ? (
-          <div className="tree-node-tokens">
-            <Zap size={9} />
-            <span>{(tokensIn || 0).toLocaleString()} tokens in,</span>
-            <span>{(tokensOut || 0).toLocaleString()} out</span>
-          </div>
-        ) : null}
-
-        <Handle type="source" position={Position.Bottom} className="tree-node-handle" />
-      </div>
-
-      {/* Context Menu */}
-      {contextMenu && (
-        <div
-          className="context-menu"
-          style={{ left: contextMenu.x, top: contextMenu.y }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <button className="context-menu-item" onClick={handleBranch}>
-            <GitBranchPlus size={14} /> Branch from here
-          </button>
-          <button className="context-menu-item" onClick={handleView}>
-            <Eye size={14} /> View thread
-          </button>
-          <button className="context-menu-item" onClick={handleToggleBookmark}>
-            <Star size={14} fill={bookmarked ? 'currentColor' : 'none'} />
-            {bookmarked ? 'Remove bookmark' : 'Bookmark node'}
-          </button>
-          <button className="context-menu-item" onClick={handleCopyResponse}>
-            <Copy size={14} /> Copy response
-          </button>
-          <button className="context-menu-item" onClick={handleExportBranch}>
-            <Download size={14} /> Export branch
-          </button>
-          {parentId && (
-            <>
-              <div className="context-menu-separator" />
-              <button className="context-menu-item danger" onClick={handleDelete}>
-                <Trash2 size={14} /> Prune branch
-              </button>
-            </>
-          )}
+      {/* Bookmark badge */}
+      {bookmarked && (
+        <div className="tree-node-bookmark" title="Bookmarked">
+          <Star size={10} fill="currentColor" />
         </div>
       )}
-    </>
+
+      {/* Three-dot menu button */}
+      <div className="tree-node-menu-wrapper" ref={menuRef}>
+        <button
+          className={`tree-node-dots-btn ${isHovered || menuOpen ? 'visible' : ''}`}
+          onClick={(e) => { e.stopPropagation(); setMenuOpen(!menuOpen); }}
+          title="Actions"
+        >
+          <MoreHorizontal size={14} />
+        </button>
+
+        {/* Dropdown menu */}
+        {menuOpen && (
+          <div className="tree-node-dropdown" onClick={(e) => e.stopPropagation()}>
+            <button className="tree-node-dropdown-item" onClick={handleView}>
+              <Eye size={14} />
+              <span>View thread</span>
+            </button>
+            <button className="tree-node-dropdown-item" onClick={handleBranch}>
+              <GitBranchPlus size={14} />
+              <span>Branch from here</span>
+            </button>
+            <button className="tree-node-dropdown-item" onClick={handleEditLabel}>
+              <Pencil size={14} />
+              <span>Edit label</span>
+            </button>
+            <button className="tree-node-dropdown-item" onClick={handleCopyResponse}>
+              {copied ? <Check size={14} /> : <Copy size={14} />}
+              <span>{copied ? 'Copied!' : 'Copy response'}</span>
+            </button>
+            <button className="tree-node-dropdown-item" onClick={handleToggleBookmark}>
+              <Star size={14} fill={bookmarked ? 'currentColor' : 'none'} />
+              <span>{bookmarked ? 'Remove bookmark' : 'Bookmark'}</span>
+            </button>
+            <button className="tree-node-dropdown-item" onClick={handleExportBranch}>
+              <Download size={14} />
+              <span>Export branch</span>
+            </button>
+            {parentId && (
+              <>
+                <div className="tree-node-dropdown-sep" />
+                <button className="tree-node-dropdown-item danger" onClick={handleDelete}>
+                  <Trash2 size={14} />
+                  <span>Prune branch</span>
+                </button>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Streaming progress bar */}
+      {statusClass === 'streaming' && (
+        <div className="tree-node-progress">
+          <div className="tree-node-progress-bar" />
+        </div>
+      )}
+
+      {/* Node content */}
+      <div className="tree-node-content">
+        <div className="tree-node-label">{label}</div>
+
+        {/* Response preview snippet */}
+        {responsePreview && statusClass !== 'streaming' && (
+          <div className="tree-node-preview">{responsePreview}</div>
+        )}
+
+        {statusClass === 'streaming' && (
+          <div className="tree-node-preview streaming-text">
+            <Zap size={10} /> Generating response…
+          </div>
+        )}
+      </div>
+
+      {/* Footer: status + meta */}
+      <div className="tree-node-footer">
+        <div className="tree-node-meta">
+          <span className="tree-node-status">
+            <span className={`tree-node-status-dot ${statusClass}`} />
+            {statusClass === 'streaming' ? 'Streaming…' :
+             statusClass === 'complete' ? 'Done' :
+             statusClass === 'error' ? 'Error' : 'Pending'}
+          </span>
+          {timeLabel && <span className="tree-node-time">{timeLabel}</span>}
+        </div>
+
+        {/* Badges */}
+        <div className="tree-node-badges">
+          {childCount > 0 && (
+            <span className="tree-node-badge" title={`${childCount} branch${childCount > 1 ? 'es' : ''}`}>
+              <GitBranchPlus size={10} /> {childCount}
+            </span>
+          )}
+          {response && (
+            <span className="tree-node-badge" title="Has response">
+              <MessageSquare size={10} />
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Token usage row */}
+      {(tokensIn || tokensOut) ? (
+        <div className="tree-node-tokens">
+          <Zap size={9} />
+          <span>{(tokensIn || 0).toLocaleString()} tokens in,</span>
+          <span>{(tokensOut || 0).toLocaleString()} out</span>
+        </div>
+      ) : null}
+
+      <Handle type="source" position={Position.Bottom} className="tree-node-handle" />
+    </div>
   );
 });
 

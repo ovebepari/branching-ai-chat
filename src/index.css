@@ -1265,46 +1265,94 @@ a {
   background: var(--text-tertiary);
 }
 
-/* NodeToolbar (React Flow built-in) */
-.tree-node-toolbar {
-  display: flex;
-  gap: 0;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-md);
-  padding: 4px 5px;
-  padding-bottom: 16px;
-  margin-bottom: -12px;
-  box-shadow: var(--shadow-lg);
-  z-index: 10;
+/* Three-dot menu button */
+.tree-node-menu-wrapper {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 20;
 }
 
-.tree-node-action-btn {
-  padding: 6px;
-  border-radius: var(--radius-sm);
-  font-size: var(--text-xs);
+.tree-node-dots-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  color: var(--text-secondary);
-  transition: all var(--transition-fast);
+  color: var(--text-tertiary);
+  opacity: 0;
+  transition: all 0.15s ease;
+  background: transparent;
+}
+
+.tree-node-dots-btn.visible {
+  opacity: 1;
+}
+
+.tree-node-dots-btn:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+/* Apple-style dropdown menu */
+.tree-node-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 180px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  padding: 4px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+  animation: dropdown-appear 0.12s ease;
+  z-index: 100;
+}
+
+[data-theme='dark'] .tree-node-dropdown {
+  background: #252530;
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes dropdown-appear {
+  from { opacity: 0; transform: translateY(-4px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.tree-node-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background 0.1s ease;
   white-space: nowrap;
 }
 
-.tree-node-action-btn:hover {
-  background: var(--accent-primary-light);
-  color: var(--accent-primary);
-  transform: scale(1.1);
+.tree-node-dropdown-item:hover {
+  background: var(--accent-primary);
+  color: white;
 }
 
-.tree-node-action-btn.active {
-  color: var(--accent-warning);
-}
-
-.tree-node-action-btn.danger:hover {
-  background: var(--accent-danger-light);
+.tree-node-dropdown-item.danger {
   color: var(--accent-danger);
+}
+
+.tree-node-dropdown-item.danger:hover {
+  background: var(--accent-danger);
+  color: white;
+}
+
+.tree-node-dropdown-sep {
+  height: 1px;
+  background: var(--border-light);
+  margin: 4px 6px;
 }
 
 /* Node content layout */
