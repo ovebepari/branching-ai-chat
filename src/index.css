@@ -259,7 +259,8 @@ a {
   height: 52px;
   flex-shrink: 0;
   color: var(--text-primary);
-  border-bottom: none;
+  border-bottom: 1px solid var(--border-light);
+  background: var(--bg-surface);
 }
 
 .topbar-left {
@@ -471,22 +472,23 @@ a {
 .topbar-action-btn {
   width: 32px;
   height: 32px;
-  border-radius: 12px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-tertiary);
+  color: var(--accent-primary);
   transition: all var(--transition-fast);
 }
 
 .topbar-action-btn:hover {
-  background: rgba(0, 0, 0, 0.08);
-  color: var(--text-primary);
+  background: var(--accent-primary-light);
+  color: var(--accent-primary-hover);
 }
 
 .topbar-action-btn:disabled {
   opacity: 0.3;
   cursor: not-allowed;
+  color: var(--text-tertiary);
 }
 
 /* TopBar status badge */
