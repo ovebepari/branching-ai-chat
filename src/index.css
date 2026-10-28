@@ -1046,32 +1046,32 @@ a {
 
 .react-flow {
   --xy-edge-stroke: rgba(0, 0, 0, 0.25);
-  --xy-edge-stroke-width: 1.5;
+  --xy-edge-stroke-width: 2;
   --xy-edge-stroke-default: rgba(0, 0, 0, 0.25);
-  --xy-edge-stroke-width-default: 1.5;
+  --xy-edge-stroke-width-default: 2;
   --xy-edge-stroke-selected: var(--accent-primary);
 }
 
 .react-flow__edge-path,
 .react-flow__edge .react-flow__edge-path {
   stroke: rgba(0, 0, 0, 0.25) !important;
-  stroke-width: 1.5px !important;
+  stroke-width: 2px !important;
   stroke-linecap: round !important;
 }
 
 .react-flow__edge.edge-streaming .react-flow__edge-path {
   stroke: var(--accent-primary) !important;
-  stroke-width: 2.5px !important;
+  stroke-width: 3px !important;
 }
 
 .react-flow__edge.edge-error .react-flow__edge-path {
   stroke: var(--accent-danger) !important;
-  stroke-width: 1.5px !important;
+  stroke-width: 2px !important;
 }
 
 .react-flow__edge.edge-complete .react-flow__edge-path {
   stroke: rgba(0, 0, 0, 0.2) !important;
-  stroke-width: 1.5px !important;
+  stroke-width: 2px !important;
 }
 
 .react-flow__controls {
@@ -1182,12 +1182,12 @@ a {
 [data-theme='dark'] .react-flow__edge-path,
 [data-theme='dark'] .react-flow__edge .react-flow__edge-path {
   stroke: rgba(255, 255, 255, 0.15) !important;
-  stroke-width: 1.5px !important;
+  stroke-width: 2px !important;
 }
 
 [data-theme='dark'] .react-flow__edge.edge-complete .react-flow__edge-path {
   stroke: rgba(255, 255, 255, 0.12) !important;
-  stroke-width: 1.5px !important;
+  stroke-width: 2px !important;
 }
 
 .tree-node-bookmark {

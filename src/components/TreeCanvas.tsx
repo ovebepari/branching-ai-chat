@@ -78,7 +78,7 @@ function computeLayout(
       animated: isStreaming,
       className: isError ? 'edge-error' : isStreaming ? 'edge-streaming' : isComplete ? 'edge-complete' : '',
       style: {
-        strokeWidth: isStreaming ? 2.5 : 1.5,
+        strokeWidth: isStreaming ? 3 : 2,
         stroke: isError ? 'var(--accent-danger)' :
                 isStreaming ? 'var(--accent-primary)' :
                 'rgba(0,0,0,0.25)',
@@ -182,7 +182,7 @@ function TreeCanvasInner() {
         elementsSelectable={true}
         defaultEdgeOptions={{
           type: 'default',
-          style: { strokeWidth: 1.5, stroke: 'rgba(0,0,0,0.25)' },
+          style: { strokeWidth: 2, stroke: 'rgba(0,0,0,0.25)' },
         }}
         snapToGrid
         snapGrid={[20, 20]}
