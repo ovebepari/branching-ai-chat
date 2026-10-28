@@ -1323,25 +1323,25 @@ a {
 
 /* ===== User Prompt Card ===== */
 .user-card {
-  background: rgba(34, 139, 34, 0.1);
-  border: 1px solid rgba(34, 139, 34, 0.2);
-  border-radius: 12px;
+  background: rgba(58, 55, 255, 0.06);
+  border: 1px solid rgba(58, 55, 255, 0.15);
+  border-radius: 8px;
   overflow: hidden;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .user-card:hover {
-  border-color: rgba(34, 139, 34, 0.25);
+  border-color: rgba(58, 55, 255, 0.25);
   box-shadow: var(--shadow-sm);
 }
 
 [data-theme='dark'] .user-card {
-  background: rgba(34, 180, 80, 0.12);
-  border-color: rgba(34, 180, 80, 0.22);
+  background: rgba(85, 83, 255, 0.1);
+  border-color: rgba(85, 83, 255, 0.2);
 }
 
 [data-theme='dark'] .user-card:hover {
-  border-color: rgba(34, 180, 80, 0.28);
+  border-color: rgba(85, 83, 255, 0.3);
 }
 
 /* Card header */
@@ -1418,8 +1418,8 @@ a {
 }
 
 .user-card-chip.complete {
-  background: var(--accent-success-light);
-  color: var(--accent-success);
+  background: var(--accent-primary-light);
+  color: var(--accent-primary);
 }
 
 .user-card-chip.streaming {
