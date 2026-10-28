@@ -196,7 +196,7 @@ function TreeCanvasInner() {
           variant={BackgroundVariant.Dots}
           gap={16}
           size={2}
-          color={darkMode ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.2)'}
+          color={darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)'}
         />
         <Controls showInteractive={false} />
         <MiniMap
