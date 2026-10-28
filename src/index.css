@@ -1022,16 +1022,18 @@ a {
   flex: 1;
   position: relative;
   background:
-    radial-gradient(ellipse at 30% 50%, rgba(79, 106, 245, 0.06) 0%, transparent 60%),
-    radial-gradient(ellipse at 80% 30%, rgba(124, 58, 237, 0.04) 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 80%, rgba(59, 130, 246, 0.04) 0%, transparent 50%);
+    radial-gradient(ellipse at 20% 40%, rgba(79, 106, 245, 0.15) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 25%, rgba(139, 92, 246, 0.12) 0%, transparent 45%),
+    radial-gradient(ellipse at 50% 85%, rgba(59, 130, 246, 0.10) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 60%, rgba(245, 158, 11, 0.06) 0%, transparent 40%);
 }
 
 [data-theme='dark'] .tree-canvas-container {
   background:
-    radial-gradient(ellipse at 30% 50%, rgba(79, 106, 245, 0.08) 0%, transparent 60%),
-    radial-gradient(ellipse at 80% 30%, rgba(124, 58, 237, 0.06) 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 80%, rgba(59, 130, 246, 0.06) 0%, transparent 50%);
+    radial-gradient(ellipse at 20% 40%, rgba(79, 106, 245, 0.18) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 25%, rgba(139, 92, 246, 0.14) 0%, transparent 45%),
+    radial-gradient(ellipse at 50% 85%, rgba(59, 130, 246, 0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 60%, rgba(245, 158, 11, 0.06) 0%, transparent 40%);
 }
 
 .react-flow__background {
