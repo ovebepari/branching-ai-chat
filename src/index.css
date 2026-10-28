@@ -1031,14 +1031,25 @@ a {
 }
 
 .react-flow__edge-path {
-  stroke: rgba(0, 0, 0, 0.5) !important;
-  stroke-width: 3 !important;
-  stroke-linecap: round !important;
+  stroke: rgba(0, 0, 0, 0.5);
+  stroke-width: 3;
+  stroke-linecap: round;
 }
 
-.react-flow__edge.animated .react-flow__edge-path {
-  stroke: var(--accent-primary) !important;
-  stroke-width: 4 !important;
+.react-flow__edge.edge-streaming .react-flow__edge-path {
+  stroke: var(--accent-primary);
+  stroke-width: 4;
+}
+
+.react-flow__edge.edge-error .react-flow__edge-path {
+  stroke: var(--accent-danger);
+  stroke-width: 3;
+}
+
+.react-flow__edge.edge-complete .react-flow__edge-path {
+  stroke: var(--accent-success);
+  stroke-width: 3;
+  opacity: 0.7;
 }
 
 .react-flow__controls {

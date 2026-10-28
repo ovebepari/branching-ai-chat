@@ -76,14 +76,7 @@ function computeLayout(
       target: childId,
       type: 'smoothstep',
       animated: isStreaming,
-      style: {
-        stroke: isError ? 'var(--accent-danger)' :
-                isStreaming ? 'var(--accent-primary)' :
-                isComplete ? 'var(--accent-success)' :
-                undefined,
-        strokeWidth: isStreaming ? 2.5 : 1.5,
-        opacity: isComplete ? 0.7 : 1,
-      },
+      className: isError ? 'edge-error' : isStreaming ? 'edge-streaming' : isComplete ? 'edge-complete' : '',
       markerEnd: {
         type: 'arrowclosed' as any,
         width: 16,
