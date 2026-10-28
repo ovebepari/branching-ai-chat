@@ -212,14 +212,14 @@ a {
 
 .chat-pane-wrapper {
   flex-shrink: 0;
-  height: calc(100% - 32px);
-  margin: 16px 0 16px 16px;
+  height: calc(100% - 48px);
+  margin: 24px 0 24px 24px;
   display: flex;
   overflow: hidden;
   min-width: 0;
   background: var(--bg-surface);
   border-radius: 20px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
   z-index: 10;
   position: relative;
 }
@@ -989,8 +989,8 @@ a {
 .resize-handle-line {
   width: 2px;
   height: 100%;
-  background: rgba(0, 0, 0, 0.1);
-  opacity: 0.6;
+  background: transparent;
+  opacity: 0;
   transition: all var(--transition-fast);
   cursor: col-resize;
   pointer-events: none;
