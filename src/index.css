@@ -1030,9 +1030,13 @@ a {
   background: transparent !important;
 }
 
+.react-flow {
+  --xy-edge-stroke: rgba(0, 0, 0, 0.45);
+  --xy-edge-stroke-width: 3;
+  --xy-edge-stroke-selected: var(--accent-primary);
+}
+
 .react-flow__edge-path {
-  stroke: rgba(0, 0, 0, 0.5);
-  stroke-width: 3;
   stroke-linecap: round;
 }
 
