@@ -42,7 +42,7 @@ export const CustomTreeNode = memo(({ data, id }: NodeProps) => {
   // Close menu on outside click or escape
   useEffect(() => {
     if (!menuOpen) return;
-    const handleClose = (e: MouseEvent) => {
+    const handleClose = (e: Event) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setMenuOpen(false);
       }
@@ -50,11 +50,12 @@ export const CustomTreeNode = memo(({ data, id }: NodeProps) => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setMenuOpen(false);
     };
-    document.addEventListener('mousedown', handleClose);
-    document.addEventListener('keydown', handleKey);
+    // Use capture phase to catch clicks before React Flow swallows them
+    window.addEventListener('pointerdown', handleClose, true);
+    window.addEventListener('keydown', handleKey);
     return () => {
-      document.removeEventListener('mousedown', handleClose);
-      document.removeEventListener('keydown', handleKey);
+      window.removeEventListener('pointerdown', handleClose, true);
+      window.removeEventListener('keydown', handleKey);
     };
   }, [menuOpen]);
 

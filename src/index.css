@@ -259,8 +259,12 @@ a {
   height: 52px;
   flex-shrink: 0;
   color: var(--text-primary);
-  border-bottom: 1px solid var(--border-light);
-  background: var(--bg-surface);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  background: transparent;
+}
+
+[data-theme='dark'] .topbar {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
 }
 
 .topbar-left {
