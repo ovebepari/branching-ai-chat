@@ -74,22 +74,14 @@ function computeLayout(
       id: `${nodeId}->${childId}`,
       source: nodeId,
       target: childId,
-      type: 'smoothstep',
+      type: 'default',
       animated: isStreaming,
       className: isError ? 'edge-error' : isStreaming ? 'edge-streaming' : isComplete ? 'edge-complete' : '',
       style: {
-        strokeWidth: isStreaming ? 3 : 2,
+        strokeWidth: isStreaming ? 2.5 : 1.5,
         stroke: isError ? 'var(--accent-danger)' :
                 isStreaming ? 'var(--accent-primary)' :
-                'rgba(0,0,0,0.35)',
-      },
-      markerEnd: {
-        type: 'arrowclosed' as any,
-        width: 10,
-        height: 10,
-        color: isError ? 'var(--accent-danger)' :
-               isStreaming ? 'var(--accent-primary)' :
-               'rgba(0,0,0,0.35)',
+                'rgba(0,0,0,0.25)',
       },
     });
   }
@@ -189,7 +181,8 @@ function TreeCanvasInner() {
         nodesConnectable={false}
         elementsSelectable={true}
         defaultEdgeOptions={{
-          style: { strokeWidth: 2, stroke: 'rgba(0,0,0,0.35)' },
+          type: 'default',
+          style: { strokeWidth: 1.5, stroke: 'rgba(0,0,0,0.25)' },
         }}
         snapToGrid
         snapGrid={[20, 20]}
