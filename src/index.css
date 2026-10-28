@@ -1033,26 +1033,31 @@ a {
 .react-flow {
   --xy-edge-stroke: rgba(0, 0, 0, 0.45);
   --xy-edge-stroke-width: 3;
+  --xy-edge-stroke-default: rgba(0, 0, 0, 0.45);
+  --xy-edge-stroke-width-default: 3;
   --xy-edge-stroke-selected: var(--accent-primary);
 }
 
-.react-flow__edge-path {
-  stroke-linecap: round;
+.react-flow__edge-path,
+.react-flow__edge .react-flow__edge-path {
+  stroke: rgba(0, 0, 0, 0.45) !important;
+  stroke-width: 3px !important;
+  stroke-linecap: round !important;
 }
 
 .react-flow__edge.edge-streaming .react-flow__edge-path {
-  stroke: var(--accent-primary);
-  stroke-width: 4;
+  stroke: var(--accent-primary) !important;
+  stroke-width: 4px !important;
 }
 
 .react-flow__edge.edge-error .react-flow__edge-path {
-  stroke: var(--accent-danger);
-  stroke-width: 3;
+  stroke: var(--accent-danger) !important;
+  stroke-width: 3px !important;
 }
 
 .react-flow__edge.edge-complete .react-flow__edge-path {
-  stroke: var(--accent-success);
-  stroke-width: 3;
+  stroke: var(--accent-success) !important;
+  stroke-width: 3px !important;
   opacity: 0.7;
 }
 
