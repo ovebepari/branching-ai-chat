@@ -68,10 +68,10 @@
   --header-height: 0px;
 
   /* Radius — Sharper, editorial */
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
-  --radius-xl: 12px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 22px;
   --radius-full: 9999px;
 
   /* Transitions */
@@ -183,11 +183,17 @@ a {
   height: 100vh;
   width: 100vw;
   overflow: hidden;
-  background: #E8E6E1;
+  background:
+    radial-gradient(circle, rgba(0,0,0,0.18) 1.5px, transparent 1.5px),
+    #E8E6E1;
+  background-size: 24px 24px;
 }
 
 [data-theme='dark'] .app-layout {
-  background: #1C1B1A;
+  background:
+    radial-gradient(circle, rgba(255,255,255,0.12) 1.5px, transparent 1.5px),
+    #1C1B1A;
+  background-size: 24px 24px;
 }
 
 .app-body {
@@ -283,7 +289,7 @@ a {
   width: 28px;
   height: 28px;
   background: var(--accent-primary);
-  border-radius: 6px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -326,7 +332,7 @@ a {
   left: 0;
   width: 280px;
   background: var(--bg-surface);
-  border-radius: 8px;
+  border-radius: 14px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
   z-index: 100;
   overflow: hidden;
@@ -405,7 +411,7 @@ a {
 
 .topbar-menu-item-actions button {
   padding: 3px;
-  border-radius: 4px;
+  border-radius: 10px;
   color: var(--text-tertiary);
   display: flex;
   align-items: center;
@@ -429,7 +435,7 @@ a {
   padding: 2px 6px;
   font-size: var(--text-sm);
   border: 1.5px solid var(--accent-primary);
-  border-radius: 4px;
+  border-radius: 10px;
   background: var(--bg-surface);
   color: var(--text-primary);
   outline: none;
@@ -465,7 +471,7 @@ a {
 .topbar-action-btn {
   width: 32px;
   height: 32px;
-  border-radius: 6px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -547,7 +553,7 @@ a {
   width: 26px;
   height: 26px;
   background: rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -786,7 +792,7 @@ a {
   right: 8px;
   background: var(--bg-surface);
   border: 1px solid var(--border-light);
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 12px;
   box-shadow: var(--shadow-lg);
   animation: stats-appear 0.15s ease;
@@ -810,7 +816,7 @@ a {
 
 .stats-panel-close {
   padding: 3px;
-  border-radius: 4px;
+  border-radius: 10px;
   color: var(--text-tertiary);
   transition: all 0.15s ease;
 }
@@ -1083,7 +1089,7 @@ a {
 .tree-node {
   background: var(--bg-surface);
   border: 1px solid var(--border-light);
-  border-radius: 8px;
+  border-radius: 16px;
   padding: 10px 14px;
   min-width: 170px;
   max-width: 280px;
@@ -1339,7 +1345,7 @@ a {
   gap: 3px;
   font-size: 0.635rem;
   padding: 1px 5px;
-  border-radius: 10px;
+  border-radius: 14px;
   background: var(--accent-primary-light);
   color: var(--accent-primary);
   font-weight: 600;
@@ -1366,7 +1372,7 @@ a {
   gap: 4px;
   margin-top: 4px;
   padding: 3px 6px;
-  border-radius: 6px;
+  border-radius: 12px;
   background: rgba(245, 158, 11, 0.08);
   font-size: 0.58rem;
   font-family: var(--font-mono);
@@ -1625,7 +1631,7 @@ a {
 .user-card {
   background: rgba(58, 55, 255, 0.1);
   border: 1px solid rgba(58, 55, 255, 0.2);
-  border-radius: 8px;
+  border-radius: 14px;
   overflow: hidden;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -1679,7 +1685,7 @@ a {
 
 .user-card-edit-btn {
   padding: 3px;
-  border-radius: 4px;
+  border-radius: 10px;
   color: var(--text-tertiary);
   opacity: 0;
   transition: all 0.15s ease;
@@ -1709,7 +1715,7 @@ a {
   gap: 3px;
   font-size: 0.6rem;
   padding: 2px 7px;
-  border-radius: 10px;
+  border-radius: 14px;
   background: var(--bg-secondary);
   color: var(--text-secondary);
   font-weight: 500;
@@ -1765,7 +1771,7 @@ a {
   gap: 3px;
   font-size: 0.6rem;
   padding: 3px 8px;
-  border-radius: 6px;
+  border-radius: 12px;
   color: var(--text-tertiary);
   opacity: 0;
   transition: all 0.15s ease;
@@ -1875,7 +1881,7 @@ a {
   font-size: 0.82em;
   background: var(--accent-primary-light);
   padding: 2px 7px;
-  border-radius: 5px;
+  border-radius: 10px;
   color: var(--accent-primary-hover, var(--accent-primary));
   font-weight: 500;
 }
@@ -1884,7 +1890,7 @@ a {
 .chat-message-body pre {
   background: transparent;
   border: 1px solid var(--border-light);
-  border-radius: 10px;
+  border-radius: 14px;
   overflow-x: auto;
   margin: 0.75em 0;
   font-size: var(--text-xs);
@@ -1940,7 +1946,7 @@ a {
   border-collapse: collapse;
   margin: 0.75em 0;
   font-size: 0.85em;
-  border-radius: 8px;
+  border-radius: 14px;
   overflow: hidden;
   border: 1px solid var(--border-light);
 }
