@@ -115,3 +115,10 @@ All visual styling uses CSS custom properties defined in `:root` at the top of `
 - Prefer CSS transitions over JS-driven animations
 - Use `transition` on specific properties, not `all`
 - Hover/focus effects should be pure CSS — no React state
+
+## Git Workflow
+
+- **Commit after every tiny feature** — don't batch multiple unrelated changes
+- **Detailed commit messages** — include what changed, why, and which files were affected
+- Format: short summary line, then bullet points with specifics
+- Commit even small fixes (typos, color tweaks, border changes) individually
