@@ -35,6 +35,30 @@ nvm use --lts
 
 </details>
 
+### Antigravity CLI (`agy`)
+
+Branch Chat uses the **Google Antigravity CLI** to route AI queries. Install it with:
+
+**macOS / Linux:**
+
+```bash
+curl -fsSL https://antigravity.google/cli/install.sh | bash
+```
+
+**Windows (PowerShell):**
+
+```powershell
+irm https://antigravity.google/cli/install.ps1 | iex
+```
+
+Verify the installation:
+
+```bash
+agy --version
+```
+
+> **Note:** You need a valid Gemini API key or Google account configured with `agy` for AI responses to work. Without `agy`, the app still runs but falls back to mock responses.
+
 ## Quick Start
 
 ```bash
