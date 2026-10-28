@@ -209,7 +209,7 @@ function TreeCanvasInner() {
             return darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)';
           }}
           maskColor={darkMode ? 'rgba(20,20,28,0.8)' : 'rgba(250,249,247,0.8)'}
-          style={{ borderRadius: 8, border: '1px solid var(--border-light)' }}
+          style={{ borderRadius: 16, border: '1px solid var(--border-light)' }}
           pannable
           zoomable
         />
