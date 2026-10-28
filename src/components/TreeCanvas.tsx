@@ -81,8 +81,7 @@ function computeLayout(
         strokeWidth: isStreaming ? 4 : 3,
         stroke: isError ? 'var(--accent-danger)' :
                 isStreaming ? 'var(--accent-primary)' :
-                isComplete ? 'var(--accent-success)' :
-                'rgba(0,0,0,0.45)',
+                'rgba(0,0,0,0.35)',
       },
       markerEnd: {
         type: 'arrowclosed' as any,

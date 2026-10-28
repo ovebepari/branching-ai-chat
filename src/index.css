@@ -1062,9 +1062,8 @@ a {
 }
 
 .react-flow__edge.edge-complete .react-flow__edge-path {
-  stroke: var(--accent-success) !important;
+  stroke: rgba(0, 0, 0, 0.35) !important;
   stroke-width: 3px !important;
-  opacity: 0.7;
 }
 
 .react-flow__controls {
@@ -1088,14 +1087,14 @@ a {
 /* Custom React Flow node */
 .tree-node {
   background: var(--bg-surface);
-  border: 1px solid var(--border-light);
+  border: 1.5px solid var(--border-light);
   border-radius: 16px;
-  padding: 10px 14px;
+  padding: 14px 16px;
   min-width: 170px;
   max-width: 280px;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   position: relative;
   overflow: hidden;
 }
@@ -1108,8 +1107,7 @@ a {
 
 .tree-node.selected {
   border-color: var(--accent-primary);
-  border-left: 3px solid var(--accent-primary);
-  box-shadow: 0 0 0 2px rgba(58, 55, 255, 0.12), 0 4px 12px rgba(58, 55, 255, 0.1);
+  box-shadow: 0 0 0 3px rgba(58, 55, 255, 0.15), 0 4px 16px rgba(58, 55, 255, 0.1);
 }
 
 .tree-node.streaming {
@@ -1159,10 +1157,9 @@ a {
 }
 
 .tree-node-label {
-  font-size: 1.02rem;
+  font-size: 0.92rem;
   font-weight: 600;
   color: var(--text-primary);
-  opacity: 0.88;
   line-height: 1.35;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1176,8 +1173,8 @@ a {
   display: flex;
   align-items: center;
   gap: var(--space-1);
-  margin-top: 5px;
-  font-size: 0.825rem;
+  margin-top: 8px;
+  font-size: 0.75rem;
   color: var(--text-secondary);
   white-space: nowrap;
 }
@@ -1192,12 +1189,12 @@ a {
 .tree-node-time {
   margin-left: auto;
   opacity: 0.6;
-  font-size: 0.77rem;
+  font-size: 0.7rem;
 }
 
 .tree-node-status-dot {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
 }
 
@@ -1224,11 +1221,13 @@ a {
 /* NodeToolbar (React Flow built-in) */
 .tree-node-toolbar {
   display: flex;
-  gap: 2px;
+  gap: 0;
   background: var(--bg-surface);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-md);
-  padding: 5px 6px;
+  padding: 4px 5px;
+  padding-bottom: 12px;
+  margin-bottom: -8px;
   box-shadow: var(--shadow-lg);
   z-index: 10;
 }

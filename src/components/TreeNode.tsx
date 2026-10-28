@@ -139,7 +139,7 @@ export const CustomTreeNode = memo(({ data, id }: NodeProps) => {
       <NodeToolbar
         isVisible={isHovered || isActive}
         position={Position.Top}
-        offset={8}
+        offset={0}
         className="tree-node-toolbar"
       >
         <button
