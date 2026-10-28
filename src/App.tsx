@@ -36,6 +36,8 @@ export default function App() {
   const serverOnline = useTreeStore((s) => s.serverOnline);
   const toggleDarkMode = useTreeStore((s) => s.toggleDarkMode);
   const setActiveNode = useTreeStore((s) => s.setActiveNode);
+  const projects = useTreeStore((s) => s.projects);
+  const setActiveProject = useTreeStore((s) => s.setActiveProject);
 
   const [showSettings, setShowSettings] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
@@ -163,6 +165,21 @@ export default function App() {
               <Plus size={18} />
               New Project
             </button>
+
+            {projects.length > 0 && (
+              <div className="no-project-list">
+                <div className="no-project-list-title">Existing Projects</div>
+                {projects.map((p) => (
+                  <button
+                    key={p.id}
+                    className="no-project-list-item"
+                    onClick={() => setActiveProject(p.id)}
+                  >
+                    {p.name}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
