@@ -8,7 +8,12 @@ import {
 } from 'lucide-react';
 
 export function ChatPane() {
-  const project = useTreeStore((s) => s.getActiveProject());
+  // Use stable primitive selectors — no new objects created per store change
+  const activeProjectId = useTreeStore((s) => s.activeProjectId);
+  const project = useTreeStore((s) => {
+    const p = s.projects.find((p) => p.id === s.activeProjectId);
+    return p; // same reference if store hasn't changed the project
+  });
   const addNode = useTreeStore((s) => s.addNode);
   const appendNodeResponse = useTreeStore((s) => s.appendNodeResponse);
   const setNodeStatus = useTreeStore((s) => s.setNodeStatus);

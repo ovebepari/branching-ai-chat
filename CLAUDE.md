@@ -90,3 +90,28 @@ All visual styling uses CSS custom properties defined in `:root` at the top of `
 - **React Flow v12**: Uses strict generics — `Node<data, type>` and `Edge<data>` require explicit type params.
 - **Vite proxy**: `/api/*` routes are proxied to `localhost:3001` via `vite.config.ts`.
 - **No auth**: No authentication. Intended for local/single-user use.
+
+## Performance Rules (CRITICAL)
+
+### No unnecessary re-renders
+- **NEVER use `useState` for UI state that changes on mouse move, hover, or character input** — use CSS-only solutions (`:hover`, `:focus`), `useRef`, or uncontrolled components
+- **NEVER call store methods inside selectors**: `useTreeStore((s) => s.getActiveProject())` creates new objects every render. Use `useTreeStore((s) => s.projects.find(p => p.id === s.activeProjectId))` instead
+- **NEVER destructure the full store**: `useTreeStore()` subscribes to ALL state. Always use individual selectors: `useTreeStore((s) => s.specificField)`
+- **Wrap heavy components in `React.memo`** — especially ChatMessage (markdown/KaTeX), Sidebar, and any component receiving props
+- **Use `useMemo` for expensive computations** — thread building, message list rendering, layout calculations
+- **Use `useCallback` for all handlers** passed as props or used in effects
+
+### Input fields
+- **Chat textarea must be uncontrolled** — use `useRef` for value, not `useState`. The `value` prop causes re-renders on every keystroke which re-renders the entire message list
+- Auto-resize textarea height directly via DOM in the `onChange` handler, not via `useEffect`
+
+### Zustand store selectors
+- Functions (actions) are stable references — selecting `(s) => s.addNode` is fine
+- Primitive values are compared by value — selecting `(s) => s.activeProjectId` is fine
+- Objects/arrays from `.find()` return the same reference if unchanged — this is fine
+- **Calling a function inside a selector** `(s) => s.someMethod()` always returns a new reference — AVOID
+
+### CSS animations & transitions
+- Prefer CSS transitions over JS-driven animations
+- Use `transition` on specific properties, not `all`
+- Hover/focus effects should be pure CSS — no React state

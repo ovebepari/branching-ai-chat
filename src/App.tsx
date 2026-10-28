@@ -138,7 +138,7 @@ export default function App() {
   }, []);
 
   return (
-    <div className="app-layout">
+    <div className="app-layout app-focus-dim">
       <div
         ref={sidebarRef}
         className="sidebar-wrapper"
@@ -178,7 +178,9 @@ export default function App() {
             onDoubleClick={handleChatReset}
           />
 
-          <TreeCanvas />
+          <div className="canvas-wrapper">
+            <TreeCanvas />
+          </div>
         </div>
       ) : (
         <div className="main-content">

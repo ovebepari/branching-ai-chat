@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, memo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -151,7 +151,7 @@ function UserCard({ text, nodeId, label, createdAt, depth, branchCount, bookmark
   );
 }
 
-export function ChatMessage({ role, text, nodeId, isStreaming, label, createdAt, depth, branchCount, bookmarked, status }: ChatMessageProps) {
+export const ChatMessage = memo(function ChatMessage({ role, text, nodeId, isStreaming, label, createdAt, depth, branchCount, bookmarked, status }: ChatMessageProps) {
   if (role === 'user') {
     return (
       <div className="chat-message user">
@@ -194,4 +194,4 @@ export function ChatMessage({ role, text, nodeId, isStreaming, label, createdAt,
       </div>
     </div>
   );
-}
+});

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, memo } from 'react';
 import { useTreeStore } from '../store/useTreeStore';
 import { db } from '../services/db';
 import {
@@ -24,21 +24,19 @@ interface SidebarProps {
   onNewProject: () => void;
 }
 
-export function Sidebar({ onOpenSettings, onNewProject }: SidebarProps) {
-  const {
-    projects,
-    activeProjectId,
-    sidebarCollapsed,
-    toggleSidebar,
-    setActiveProject,
-    deleteProject,
-    renameProject,
-    importProject,
-    provider,
-    serverOnline,
-    darkMode,
-    toggleDarkMode,
-  } = useTreeStore();
+export const Sidebar = memo(function Sidebar({ onOpenSettings, onNewProject }: SidebarProps) {
+  const projects = useTreeStore((s) => s.projects);
+  const activeProjectId = useTreeStore((s) => s.activeProjectId);
+  const sidebarCollapsed = useTreeStore((s) => s.sidebarCollapsed);
+  const toggleSidebar = useTreeStore((s) => s.toggleSidebar);
+  const setActiveProject = useTreeStore((s) => s.setActiveProject);
+  const deleteProject = useTreeStore((s) => s.deleteProject);
+  const renameProject = useTreeStore((s) => s.renameProject);
+  const importProject = useTreeStore((s) => s.importProject);
+  const provider = useTreeStore((s) => s.provider);
+  const serverOnline = useTreeStore((s) => s.serverOnline);
+  const darkMode = useTreeStore((s) => s.darkMode);
+  const toggleDarkMode = useTreeStore((s) => s.toggleDarkMode);
 
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState('');
@@ -376,4 +374,4 @@ export function Sidebar({ onOpenSettings, onNewProject }: SidebarProps) {
       )}
     </aside>
   );
-}
+});

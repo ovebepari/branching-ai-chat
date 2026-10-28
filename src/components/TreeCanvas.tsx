@@ -106,7 +106,7 @@ function computeLayout(
 }
 
 function TreeCanvasInner() {
-  const project = useTreeStore((s) => s.getActiveProject());
+  const project = useTreeStore((s) => s.projects.find((p) => p.id === s.activeProjectId));
   const setActiveNode = useTreeStore((s) => s.setActiveNode);
   const { fitView } = useReactFlow();
 
@@ -201,8 +201,8 @@ function TreeCanvasInner() {
         <Controls showInteractive={false} />
         <MiniMap
           nodeColor={(n) => {
-            if (n.data?.isActive) return '#6366f1';
-            if (n.data?.status === 'streaming') return '#6366f1';
+            if (n.data?.isActive) return '#3A37FF';
+            if (n.data?.status === 'streaming') return '#3A37FF';
             if (n.data?.status === 'error') return '#ef4444';
             return darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)';
           }}
