@@ -239,11 +239,6 @@ a {
   transition: opacity 0.3s ease;
 }
 
-/* Section focus dimming — pure CSS, zero JS re-renders */
-.chat-pane-wrapper,
-.canvas-wrapper {
-  transition: opacity 0.3s ease;
-}
 
 /* ===== TopBar ===== */
 .topbar {
