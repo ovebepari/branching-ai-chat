@@ -5,6 +5,7 @@ import { ChatMessage } from './ChatMessage';
 import {
   MessageSquare, GitBranch, Minimize2, ArrowUp, Download,
   Star, Copy, ArrowUpToLine, GitBranchPlus, Trash2, Check,
+  ChevronDown,
 } from 'lucide-react';
 
 export function ChatPane() {
@@ -28,6 +29,8 @@ export function ChatPane() {
   const setActiveNode = useTreeStore((s) => s.setActiveNode);
   const setNodeUsage = useTreeStore((s) => s.setNodeUsage);
   const provider = useTreeStore((s) => s.provider);
+  const projects = useTreeStore((s) => s.projects);
+  const setActiveProject = useTreeStore((s) => s.setActiveProject);
 
   const inputRef = useRef('');
   const [isStreaming, setIsStreaming] = useState(false);
@@ -234,130 +237,7 @@ export function ChatPane() {
 
   return (
     <div className="chat-pane">
-      <div className="chat-pane-header">
-        <div className="chat-pane-header-info">
-          <div className="chat-pane-title">
-            {activeNode ? activeNode.label : project?.name || 'Thread'}
-          </div>
-          <div className="chat-pane-subtitle">
-            {activeNode ? (
-              <>
-                <span>Depth {depth}</span>
-                <span className="chat-header-dot">·</span>
-                <span>{thread.length} {thread.length === 1 ? 'message' : 'messages'}</span>
-                <span className="chat-header-dot">·</span>
-                <span>{activeNode.children.length} {activeNode.children.length === 1 ? 'branch' : 'branches'}</span>
-                {activeNode.createdAt && (
-                  <>
-                    <span className="chat-header-dot">·</span>
-                    <span>{new Date(activeNode.createdAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
-                  </>
-                )}
-              </>
-            ) : (
-              <>
-                <span>{project ? `${Object.keys(project.nodes).length} nodes` : 'Select or create a node'}</span>
-                {provider.type !== 'mock' && provider.model && (
-                  <>
-                    <span className="chat-header-dot">·</span>
-                    <span>{provider.model}</span>
-                  </>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-        <div className="chat-pane-header-actions">
-          {/* Scroll to top */}
-          {thread.length > 1 && (
-            <button
-              className="chat-pane-header-btn"
-              onClick={() => messagesContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })}
-              title="Scroll to top"
-            >
-              <ArrowUpToLine size={14} />
-            </button>
-          )}
 
-          {/* Copy full thread */}
-          {thread.length > 0 && (
-            <button
-              className={`chat-pane-header-btn ${copied ? 'copied' : ''}`}
-              onClick={() => {
-                const text = thread.map(n => `User: ${n.prompt}\n\nAI: ${n.response || '(no response)'}`).join('\n\n---\n\n');
-                navigator.clipboard.writeText(text);
-                setCopied(true);
-                setTimeout(() => setCopied(false), 1500);
-              }}
-              title={copied ? 'Copied!' : 'Copy full thread'}
-            >
-              {copied ? <Check size={14} /> : <Copy size={14} />}
-            </button>
-          )}
-
-          {/* Bookmark toggle */}
-          {activeNodeId && (
-            <button
-              className={`chat-pane-header-btn ${activeNode?.bookmarked ? 'active' : ''}`}
-              onClick={() => toggleBookmark(activeNodeId)}
-              title={activeNode?.bookmarked ? 'Remove bookmark' : 'Bookmark this node'}
-            >
-              <Star size={14} fill={activeNode?.bookmarked ? 'currentColor' : 'none'} />
-            </button>
-          )}
-
-          {/* Export thread */}
-          {thread.length > 0 && (
-            <button
-              className="chat-pane-header-btn export-btn"
-              onClick={handleExport}
-              title="Export thread as Markdown"
-            >
-              <Download size={14} />
-            </button>
-          )}
-
-          {/* Branch from here */}
-          {activeNodeId && (
-            <button
-              className="chat-pane-header-btn"
-              onClick={() => {
-                textareaRef.current?.focus();
-                window.dispatchEvent(new CustomEvent('branch-from-node', { detail: { nodeId: activeNodeId } }));
-              }}
-              title="Branch from this node"
-            >
-              <GitBranchPlus size={14} />
-            </button>
-          )}
-
-          {/* Compress */}
-          {hasChildren && (
-            <button
-              className="chat-pane-header-btn"
-              onClick={handleCompress}
-              title="Compress this branch"
-            >
-              <Minimize2 size={14} />
-            </button>
-          )}
-
-          {/* Prune branch */}
-          {activeNodeId && activeNode?.parentId && (
-            <button
-              className="chat-pane-header-btn danger"
-              onClick={() => {
-                if (confirm('Delete this node and all its children?')) {
-                  deleteNode(activeNodeId);
-                }
-              }}
-              title="Prune this branch"
-            >
-              <Trash2 size={14} />
-            </button>
-          )}
-        </div>
-      </div>
 
       <div className="chat-messages" ref={messagesContainerRef}>
         {thread.length === 0 && !activeNode && (
@@ -391,19 +271,22 @@ export function ChatPane() {
       </div>
 
       <div className="chat-input-container">
-        {/* Context toolbar */}
+        {/* Toolbar: project selector + context */}
         <div className="chat-input-toolbar">
           <div className="chat-input-toolbar-left">
+            <select
+              className="chat-project-select"
+              value={activeProjectId || ''}
+              onChange={(e) => setActiveProject(e.target.value)}
+            >
+              {projects.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
             {activeNode && (
               <span className="chat-input-context-pill" title={activeNode.label}>
                 <GitBranch size={12} />
                 <span className="chat-input-context-label">{activeNode.label || 'Node'}</span>
-              </span>
-            )}
-            {!activeNode && (
-              <span className="chat-input-context-pill chat-input-context-root">
-                <MessageSquare size={12} />
-                <span className="chat-input-context-label">New thread</span>
               </span>
             )}
           </div>
@@ -424,7 +307,7 @@ export function ChatPane() {
                 ? 'Branch from this node…'
                 : 'Start a new conversation…'
             }
-            rows={1}
+            rows={2}
             disabled={isStreaming}
           />
           {isStreaming ? (
