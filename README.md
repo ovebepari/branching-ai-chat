@@ -39,7 +39,13 @@ nvm use --lts
 
 Branch Chat uses the **Google Antigravity CLI** to route AI queries. Install it with:
 
-**macOS / Linux:**
+**Ubuntu (snap):**
+
+```bash
+sudo snap install antigravity-cli
+```
+
+**macOS / Linux (script):**
 
 ```bash
 curl -fsSL https://antigravity.google/cli/install.sh | bash
