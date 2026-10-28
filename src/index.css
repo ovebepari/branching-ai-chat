@@ -1135,6 +1135,52 @@ a {
   border-color: var(--accent-warning);
 }
 
+/* Dark mode tree nodes — elevated glass cards */
+[data-theme='dark'] .tree-node {
+  background: linear-gradient(145deg, #1e1e2d, #252538);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+[data-theme='dark'] .tree-node:hover {
+  border-color: var(--accent-primary);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(85, 83, 255, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+[data-theme='dark'] .tree-node.selected {
+  border-color: var(--accent-primary);
+  box-shadow:
+    0 0 0 3px rgba(85, 83, 255, 0.25),
+    0 8px 24px rgba(85, 83, 255, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+[data-theme='dark'] .tree-node.bookmarked {
+  border-color: var(--accent-warning);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(245, 158, 11, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+[data-theme='dark'] .tree-node-preview {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+[data-theme='dark'] .react-flow__edge-path,
+[data-theme='dark'] .react-flow__edge .react-flow__edge-path {
+  stroke: rgba(255, 255, 255, 0.2) !important;
+}
+
+[data-theme='dark'] .react-flow__edge.edge-complete .react-flow__edge-path {
+  stroke: rgba(255, 255, 255, 0.2) !important;
+}
+
 .tree-node-bookmark {
   position: absolute;
   top: -6px;
