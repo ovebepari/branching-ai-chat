@@ -391,6 +391,28 @@ export function ChatPane() {
       </div>
 
       <div className="chat-input-container">
+        {/* Context toolbar */}
+        <div className="chat-input-toolbar">
+          <div className="chat-input-toolbar-left">
+            {activeNode && (
+              <span className="chat-input-context-pill" title={activeNode.label}>
+                <GitBranch size={12} />
+                <span className="chat-input-context-label">{activeNode.label || 'Node'}</span>
+              </span>
+            )}
+            {!activeNode && (
+              <span className="chat-input-context-pill chat-input-context-root">
+                <MessageSquare size={12} />
+                <span className="chat-input-context-label">New thread</span>
+              </span>
+            )}
+          </div>
+          <div className="chat-input-toolbar-right">
+            <span className="chat-input-model-badge">{provider.model || 'default'}</span>
+          </div>
+        </div>
+
+        {/* Input row */}
         <div className="chat-input-wrapper">
           <textarea
             ref={textareaRef}
@@ -405,15 +427,25 @@ export function ChatPane() {
             rows={1}
             disabled={isStreaming}
           />
-          <button
-            className="chat-send-btn"
-            onClick={handleSubmit}
-            disabled={isStreaming}
-            title="Send (Enter)"
-          >
-            <ArrowUp size={18} />
-          </button>
+          {isStreaming ? (
+            <button
+              className="chat-stop-btn"
+              title="Stop"
+            >
+              <Minimize2 size={16} />
+            </button>
+          ) : (
+            <button
+              className="chat-send-btn"
+              onClick={handleSubmit}
+              title="Send (Enter)"
+            >
+              <ArrowUp size={18} />
+            </button>
+          )}
         </div>
+
+        {/* Hints */}
         <div className="chat-input-hint">
           <span className="kbd">Enter</span> send · <span className="kbd">Shift+Enter</span> newline · <span className="kbd">Esc</span> deselect node
         </div>
