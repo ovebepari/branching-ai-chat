@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useTreeStore } from './store/useTreeStore';
-import { Sidebar } from './components/Sidebar';
+import { TopBar } from './components/TopBar';
 import { TreeCanvas } from './components/TreeCanvas';
 import { ChatPane } from './components/ChatPane';
 import { SettingsModal } from './components/SettingsModal';
@@ -11,18 +11,18 @@ import { GitFork, Plus } from 'lucide-react';
 const LAYOUT_STORAGE_KEY = 'dfs-chat-layout';
 
 interface LayoutSizes {
-  sidebarWidth: number;
   chatWidth: number;
 }
 
 function loadLayout(): LayoutSizes {
   try {
     const raw = localStorage.getItem(LAYOUT_STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return { chatWidth: parsed.chatWidth || Math.round(window.innerWidth * 0.45) };
+    }
   } catch {}
-  const sidebarWidth = 260;
-  const chatWidth = Math.round((window.innerWidth - sidebarWidth) * 0.7);
-  return { sidebarWidth, chatWidth };
+  return { chatWidth: Math.round(window.innerWidth * 0.45) };
 }
 
 function saveLayout(layout: LayoutSizes) {
@@ -30,22 +30,17 @@ function saveLayout(layout: LayoutSizes) {
 }
 
 export default function App() {
-  const {
-    activeProjectId,
-    sidebarCollapsed,
-    loadProjects,
-    createProject,
-    serverOnline,
-    toggleDarkMode,
-    setActiveNode,
-  } = useTreeStore();
+  const activeProjectId = useTreeStore((s) => s.activeProjectId);
+  const loadProjects = useTreeStore((s) => s.loadProjects);
+  const createProject = useTreeStore((s) => s.createProject);
+  const serverOnline = useTreeStore((s) => s.serverOnline);
+  const toggleDarkMode = useTreeStore((s) => s.toggleDarkMode);
+  const setActiveNode = useTreeStore((s) => s.setActiveNode);
 
   const [showSettings, setShowSettings] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [layout, setLayout] = useState<LayoutSizes>(loadLayout);
 
-  // Refs for direct DOM manipulation during drag (no React re-renders)
-  const sidebarRef = useRef<HTMLDivElement>(null);
   const chatRef = useRef<HTMLDivElement>(null);
   const layoutRef = useRef<LayoutSizes>(layout);
   layoutRef.current = layout;
@@ -76,7 +71,6 @@ export default function App() {
         e.preventDefault();
         setShowSettings(true);
       }
-      // Cmd/Ctrl+K → Node search
       if (meta && e.key === 'k') {
         e.preventDefault();
         setShowSearch((s) => !s);
@@ -96,15 +90,7 @@ export default function App() {
     return () => window.removeEventListener('keydown', handler);
   }, [handleNewProject, toggleDarkMode, setActiveNode, showSettings, showSearch]);
 
-  // Sidebar resize — direct DOM manipulation, commit on end
-  const handleSidebarResize = useCallback((delta: number) => {
-    const el = sidebarRef.current;
-    if (!el) return;
-    const cur = parseFloat(el.style.width) || layoutRef.current.sidebarWidth;
-    const next = Math.max(180, Math.min(500, cur + delta));
-    el.style.width = `${next}px`;
-  }, []);
-
+  // Chat resize
   const handleChatResize = useCallback((delta: number) => {
     const el = chatRef.current;
     if (!el) return;
@@ -115,75 +101,50 @@ export default function App() {
   }, []);
 
   const handleResizeEnd = useCallback(() => {
-    const sidebarW = sidebarRef.current ? parseFloat(sidebarRef.current.style.width) || layoutRef.current.sidebarWidth : layoutRef.current.sidebarWidth;
     const chatW = chatRef.current ? parseFloat(chatRef.current.style.width) || layoutRef.current.chatWidth : layoutRef.current.chatWidth;
-    const next = { sidebarWidth: sidebarW, chatWidth: chatW };
-    setLayout(next);
-    saveLayout(next);
-  }, []);
-
-  const handleSidebarReset = useCallback(() => {
-    if (sidebarRef.current) sidebarRef.current.style.width = '260px';
-    const next = { ...layoutRef.current, sidebarWidth: 260 };
+    const next = { chatWidth: chatW };
     setLayout(next);
     saveLayout(next);
   }, []);
 
   const handleChatReset = useCallback(() => {
-    const chatWidth = Math.round((window.innerWidth - 260) * 0.7);
+    const chatWidth = Math.round(window.innerWidth * 0.45);
     if (chatRef.current) chatRef.current.style.width = `${chatWidth}px`;
-    const next = { ...layoutRef.current, chatWidth };
+    const next = { chatWidth };
     setLayout(next);
     saveLayout(next);
   }, []);
 
   return (
-    <div className="app-layout app-focus-dim">
-      <div
-        ref={sidebarRef}
-        className="sidebar-wrapper"
-        style={sidebarCollapsed ? undefined : { width: layout.sidebarWidth }}
-      >
-        <Sidebar
-          onOpenSettings={() => setShowSettings(true)}
-          onNewProject={handleNewProject}
-        />
-      </div>
+    <div className="app-layout">
+      <TopBar
+        onOpenSettings={() => setShowSettings(true)}
+        onNewProject={handleNewProject}
+      />
 
-      {/* Sidebar resize handle */}
-      {!sidebarCollapsed && (
-        <ResizeHandle
-          direction="vertical"
-          onResize={handleSidebarResize}
-          onResizeEnd={handleResizeEnd}
-          onDoubleClick={handleSidebarReset}
-        />
-      )}
+      <div className="app-body">
+        {activeProjectId ? (
+          <>
+            <div
+              ref={chatRef}
+              className="chat-pane-wrapper"
+              style={{ width: layout.chatWidth }}
+            >
+              <ChatPane />
+            </div>
 
-      {activeProjectId ? (
-        <div className="main-content">
-          <div
-            ref={chatRef}
-            className="chat-pane-wrapper"
-            style={{ width: layout.chatWidth }}
-          >
-            <ChatPane />
-          </div>
+            <ResizeHandle
+              direction="vertical"
+              onResize={handleChatResize}
+              onResizeEnd={handleResizeEnd}
+              onDoubleClick={handleChatReset}
+            />
 
-          {/* Chat resize handle */}
-          <ResizeHandle
-            direction="vertical"
-            onResize={handleChatResize}
-            onResizeEnd={handleResizeEnd}
-            onDoubleClick={handleChatReset}
-          />
-
-          <div className="canvas-wrapper">
-            <TreeCanvas />
-          </div>
-        </div>
-      ) : (
-        <div className="main-content">
+            <div className="canvas-wrapper">
+              <TreeCanvas />
+            </div>
+          </>
+        ) : (
           <div className="no-project">
             <div className="no-project-icon">
               <GitFork size={36} />
@@ -204,8 +165,8 @@ export default function App() {
               New Project
             </button>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {showSettings && (
         <SettingsModal onClose={() => setShowSettings(false)} />

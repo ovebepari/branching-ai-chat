@@ -180,10 +180,18 @@ a {
 /* ===== App Layout ===== */
 .app-layout {
   display: flex;
+  flex-direction: column;
   height: 100vh;
   width: 100vw;
   overflow: hidden;
   background: #2A27E0;
+}
+
+.app-body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  min-height: 0;
 }
 
 /* ===== Layout Wrappers (for resize) ===== */
@@ -200,7 +208,7 @@ a {
 
 .chat-pane-wrapper {
   flex-shrink: 0;
-  height: calc(100vh - 16px);
+  height: calc(100% - 16px);
   margin: 8px 0;
   display: flex;
   overflow: hidden;
@@ -225,30 +233,268 @@ a {
 .canvas-wrapper {
   flex: 1;
   min-width: 0;
-  height: 100vh;
+  height: 100%;
   display: flex;
   flex-direction: column;
   transition: opacity 0.3s ease;
 }
 
 /* Section focus dimming — pure CSS, zero JS re-renders */
-.sidebar-wrapper,
 .chat-pane-wrapper,
 .canvas-wrapper {
   transition: opacity 0.3s ease;
 }
 
-/* When the app-layout is hovered, dim all sections, then un-dim the hovered one */
-.app-focus-dim:hover > .sidebar-wrapper,
-.app-focus-dim:hover > .main-content > .chat-pane-wrapper,
-.app-focus-dim:hover > .main-content > .canvas-wrapper {
-  opacity: 0.55;
+/* ===== TopBar ===== */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-5);
+  height: 52px;
+  flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.app-focus-dim > .sidebar-wrapper:hover,
-.app-focus-dim > .main-content > .chat-pane-wrapper:hover,
-.app-focus-dim > .main-content > .canvas-wrapper:hover {
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.topbar-logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 700;
+  font-size: var(--text-base);
+  color: #ffffff;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.topbar-logo-icon {
+  width: 28px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+/* Project selector dropdown */
+.topbar-project-selector {
+  position: relative;
+}
+
+.topbar-project-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  max-width: 220px;
+}
+
+.topbar-project-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.topbar-project-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.topbar-project-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  width: 280px;
+  background: var(--bg-surface);
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  z-index: 100;
+  overflow: hidden;
+  animation: menu-appear 0.15s ease;
+  color: var(--text-primary);
+}
+
+@keyframes menu-appear {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.topbar-menu-search {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--border-light);
+  color: var(--text-tertiary);
+}
+
+.topbar-menu-search input {
+  flex: 1;
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  background: transparent;
+}
+
+.topbar-menu-list {
+  max-height: 260px;
+  overflow-y: auto;
+  padding: var(--space-1) 0;
+}
+
+.topbar-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.topbar-menu-item:hover {
+  background: var(--bg-secondary);
+}
+
+.topbar-menu-item.active {
+  background: var(--accent-primary-light);
+}
+
+.topbar-menu-item.active .topbar-menu-item-name {
+  color: var(--accent-primary);
+  font-weight: 600;
+}
+
+.topbar-menu-item-name {
+  font-size: var(--text-sm);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.topbar-menu-item-actions {
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.topbar-menu-item:hover .topbar-menu-item-actions {
   opacity: 1;
+}
+
+.topbar-menu-item-actions button {
+  padding: 3px;
+  border-radius: 4px;
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+}
+
+.topbar-menu-item-actions button:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.topbar-menu-item-actions button.danger:hover {
+  color: var(--accent-danger);
+}
+
+.topbar-rename-row {
+  flex: 1;
+}
+
+.topbar-rename-input {
+  width: 100%;
+  padding: 2px 6px;
+  font-size: var(--text-sm);
+  border: 1.5px solid var(--accent-primary);
+  border-radius: 4px;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+.topbar-menu-empty {
+  padding: var(--space-4) var(--space-3);
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+}
+
+.topbar-menu-new {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-3);
+  border-top: 1px solid var(--border-light);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--accent-primary);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.topbar-menu-new:hover {
+  background: var(--accent-primary-light);
+}
+
+/* TopBar action buttons */
+.topbar-action-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.65);
+  transition: all var(--transition-fast);
+}
+
+.topbar-action-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+.topbar-action-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* TopBar status badge */
+.topbar-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.65);
+  background: rgba(255, 255, 255, 0.08);
+  margin-right: var(--space-2);
 }
 
 /* ===== Sidebar ===== */
