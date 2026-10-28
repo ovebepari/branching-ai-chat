@@ -117,11 +117,6 @@ export default function App() {
 
   return (
     <div className="app-layout">
-      <TopBar
-        onOpenSettings={() => setShowSettings(true)}
-        onNewProject={handleNewProject}
-      />
-
       <div className="app-body">
         {activeProjectId ? (
           <>
@@ -141,6 +136,10 @@ export default function App() {
             />
 
             <div className="canvas-wrapper">
+              <TopBar
+                onOpenSettings={() => setShowSettings(true)}
+                onNewProject={handleNewProject}
+              />
               <TreeCanvas />
             </div>
           </>
