@@ -78,15 +78,15 @@ function computeLayout(
       animated: isStreaming,
       className: isError ? 'edge-error' : isStreaming ? 'edge-streaming' : isComplete ? 'edge-complete' : '',
       style: {
-        strokeWidth: isStreaming ? 4 : 3,
+        strokeWidth: isStreaming ? 3 : 2,
         stroke: isError ? 'var(--accent-danger)' :
                 isStreaming ? 'var(--accent-primary)' :
                 'rgba(0,0,0,0.35)',
       },
       markerEnd: {
         type: 'arrowclosed' as any,
-        width: 20,
-        height: 20,
+        width: 10,
+        height: 10,
         color: isError ? 'var(--accent-danger)' :
                isStreaming ? 'var(--accent-primary)' :
                'rgba(0,0,0,0.35)',
@@ -189,7 +189,7 @@ function TreeCanvasInner() {
         nodesConnectable={false}
         elementsSelectable={true}
         defaultEdgeOptions={{
-          style: { strokeWidth: 3, stroke: 'rgba(0,0,0,0.45)' },
+          style: { strokeWidth: 2, stroke: 'rgba(0,0,0,0.35)' },
         }}
         snapToGrid
         snapGrid={[20, 20]}
