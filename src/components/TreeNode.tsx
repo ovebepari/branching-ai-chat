@@ -137,7 +137,7 @@ export const CustomTreeNode = memo(({ data, id }: NodeProps) => {
     <>
       {/* NodeToolbar — React Flow's built-in positioned toolbar */}
       <NodeToolbar
-        isVisible={isHovered || isActive}
+        isVisible={isHovered}
         position={Position.Top}
         offset={0}
         className="tree-node-toolbar"
