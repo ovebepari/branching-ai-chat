@@ -208,13 +208,13 @@ a {
 
 .chat-pane-wrapper {
   flex-shrink: 0;
-  height: calc(100% - 16px);
-  margin: 8px 0;
+  height: calc(100% - 20px);
+  margin: 10px 0 10px 10px;
   display: flex;
   overflow: hidden;
   min-width: 0;
   background: var(--bg-surface);
-  border-radius: 12px;
+  border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), 0 2px 8px rgba(0, 0, 0, 0.1);
   z-index: 10;
   position: relative;
