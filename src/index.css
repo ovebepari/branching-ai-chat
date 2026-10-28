@@ -1323,8 +1323,8 @@ a {
 
 /* ===== User Prompt Card ===== */
 .user-card {
-  background: rgba(58, 55, 255, 0.06);
-  border: 1px solid rgba(58, 55, 255, 0.15);
+  background: rgba(58, 55, 255, 0.1);
+  border: 1px solid rgba(58, 55, 255, 0.2);
   border-radius: 8px;
   overflow: hidden;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
