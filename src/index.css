@@ -15,12 +15,12 @@
   --text-secondary: #555555;
   --text-tertiary: #888888;
   --text-inverse: #ffffff;
-  --text-link: #3A37FF;
+  --text-link: #059669;
 
-  --accent-primary: #3A37FF;
-  --accent-primary-hover: #2B28CC;
-  --accent-primary-light: #EEEDFF;
-  --accent-primary-muted: rgba(58, 55, 255, 0.1);
+  --accent-primary: #10B981;
+  --accent-primary-hover: #059669;
+  --accent-primary-light: #ecfdf5;
+  --accent-primary-muted: rgba(16, 185, 129, 0.12);
 
   --accent-success: #059669;
   --accent-success-light: #ecfdf5;
@@ -31,13 +31,13 @@
 
   --border-light: #e0e0e0;
   --border-medium: #cccccc;
-  --border-focus: #3A37FF;
+  --border-focus: #10B981;
 
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
   --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.08);
   --shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.1);
-  --shadow-focus: 0 0 0 3px rgba(58, 55, 255, 0.2);
+  --shadow-focus: 0 0 0 3px rgba(16, 185, 129, 0.2);
 
   /* Typography — Editorial, clean */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -94,12 +94,12 @@
   --text-secondary: #9090a0;
   --text-tertiary: #606070;
   --text-inverse: #0a0a0f;
-  --text-link: #6B68FF;
+  --text-link: #34d399;
 
-  --accent-primary: #5553FF;
-  --accent-primary-hover: #7775FF;
-  --accent-primary-light: rgba(85, 83, 255, 0.15);
-  --accent-primary-muted: rgba(85, 83, 255, 0.18);
+  --accent-primary: #34d399;
+  --accent-primary-hover: #6ee7b7;
+  --accent-primary-light: rgba(52, 211, 153, 0.15);
+  --accent-primary-muted: rgba(52, 211, 153, 0.18);
 
   --accent-success: #34d399;
   --accent-success-light: rgba(52, 211, 153, 0.15);
@@ -110,13 +110,13 @@
 
   --border-light: #1e1e2d;
   --border-medium: #2d2d3f;
-  --border-focus: #5553FF;
+  --border-focus: #34d399;
 
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.5);
   --shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.6);
-  --shadow-focus: 0 0 0 3px rgba(85, 83, 255, 0.3);
+  --shadow-focus: 0 0 0 3px rgba(52, 211, 153, 0.3);
 }
 
 /* ===== Reset ===== */
@@ -1108,7 +1108,7 @@ a {
 
 .tree-node.selected {
   border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px rgba(58, 55, 255, 0.15), 0 4px 16px rgba(58, 55, 255, 0.1);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15), 0 4px 16px rgba(16, 185, 129, 0.1);
 }
 
 .tree-node.streaming {
@@ -1120,11 +1120,11 @@ a {
 
   0%,
   100% {
-    box-shadow: 0 0 0 3px rgba(85, 83, 255, 0.1);
+    box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.1);
   }
 
   50% {
-    box-shadow: 0 0 0 6px rgba(85, 83, 255, 0.06);
+    box-shadow: 0 0 0 6px rgba(52, 211, 153, 0.06);
   }
 }
 
@@ -1149,15 +1149,15 @@ a {
   border-color: var(--accent-primary);
   box-shadow:
     0 8px 24px rgba(0, 0, 0, 0.5),
-    0 0 0 1px rgba(85, 83, 255, 0.3),
+    0 0 0 1px rgba(52, 211, 153, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 [data-theme='dark'] .tree-node.selected {
   border-color: var(--accent-primary);
   box-shadow:
-    0 0 0 3px rgba(85, 83, 255, 0.25),
-    0 8px 24px rgba(85, 83, 255, 0.15),
+    0 0 0 3px rgba(52, 211, 153, 0.25),
+    0 8px 24px rgba(52, 211, 153, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
@@ -1254,7 +1254,7 @@ a {
 
 .tree-node-status-dot.streaming {
   background: var(--accent-primary);
-  box-shadow: 0 0 6px rgba(85, 83, 255, 0.5);
+  box-shadow: 0 0 6px rgba(52, 211, 153, 0.5);
   animation: pulse-dot 1s ease-in-out infinite;
 }
 
@@ -1497,7 +1497,7 @@ a {
 
 .tree-node:hover .tree-node-handle {
   background: var(--accent-primary) !important;
-  box-shadow: 0 0 6px rgba(85, 83, 255, 0.3);
+  box-shadow: 0 0 6px rgba(52, 211, 153, 0.3);
 }
 
 .tree-node.selected .tree-node-handle {
@@ -1727,25 +1727,25 @@ a {
 
 /* ===== User Prompt Card ===== */
 .user-card {
-  background: rgba(58, 55, 255, 0.1);
-  border: 1px solid rgba(58, 55, 255, 0.2);
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.18);
   border-radius: 14px;
   overflow: hidden;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .user-card:hover {
-  border-color: rgba(58, 55, 255, 0.25);
+  border-color: rgba(16, 185, 129, 0.25);
   box-shadow: var(--shadow-sm);
 }
 
 [data-theme='dark'] .user-card {
-  background: rgba(85, 83, 255, 0.1);
-  border-color: rgba(85, 83, 255, 0.2);
+  background: rgba(52, 211, 153, 0.08);
+  border-color: rgba(52, 211, 153, 0.18);
 }
 
 [data-theme='dark'] .user-card:hover {
-  border-color: rgba(85, 83, 255, 0.3);
+  border-color: rgba(52, 211, 153, 0.28);
 }
 
 /* Card header */
@@ -3103,7 +3103,7 @@ a {
 }
 
 [data-theme='dark'] .react-flow__minimap-mask {
-  fill: rgba(85, 83, 255, 0.1) !important;
+  fill: rgba(52, 211, 153, 0.1) !important;
 }
 
 [data-theme='dark'] .react-flow__edge-path {
@@ -3127,17 +3127,17 @@ a {
 }
 
 [data-theme='dark'] .tree-node:hover {
-  border-color: rgba(85, 83, 255, 0.4);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(85, 83, 255, 0.15);
+  border-color: rgba(52, 211, 153, 0.4);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(52, 211, 153, 0.15);
 }
 
 [data-theme='dark'] .tree-node.selected {
-  border-color: rgba(85, 83, 255, 0.6);
-  box-shadow: 0 0 0 2px rgba(85, 83, 255, 0.2), 0 4px 16px rgba(0, 0, 0, 0.3);
+  border-color: rgba(52, 211, 153, 0.6);
+  box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.2), 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
 [data-theme='dark'] .tree-node.streaming {
-  border-color: rgba(85, 83, 255, 0.5);
+  border-color: rgba(52, 211, 153, 0.5);
 }
 
 [data-theme='dark'] .tree-node.error {
@@ -3223,5 +3223,116 @@ a {
     height: 60vh;
     border-left: none;
     border-top: 1px solid var(--border-light);
+  }
+}
+
+/* ===== Print Styles ===== */
+@media print {
+  /* Hide everything except chat messages */
+  .topbar,
+  .canvas-wrapper,
+  .resize-handle,
+  .chat-pane-header,
+  .chat-input-card,
+  .chat-input-hint,
+  .toast,
+  .settings-overlay,
+  .node-search-overlay,
+  .no-project,
+  .react-flow__controls,
+  .react-flow__minimap,
+  .react-flow__attribution {
+    display: none !important;
+  }
+
+  /* Reset layout */
+  .app-layout {
+    display: block !important;
+    height: auto !important;
+    width: 100% !important;
+    overflow: visible !important;
+    background: white !important;
+    background-image: none !important;
+  }
+
+  .app-body {
+    display: block !important;
+    overflow: visible !important;
+  }
+
+  .chat-pane-wrapper {
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: white !important;
+  }
+
+  .chat-pane {
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: white !important;
+    border: none !important;
+  }
+
+  .chat-messages {
+    overflow: visible !important;
+    height: auto !important;
+    padding: 0 !important;
+    gap: 16px !important;
+  }
+
+  /* Format messages for print */
+  .chat-message {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .user-card {
+    background: #f8f8f8 !important;
+    border: 1px solid #ddd !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+  }
+
+  .chat-message-body {
+    color: #111 !important;
+    font-size: 11pt !important;
+    line-height: 1.6 !important;
+  }
+
+  /* Hide interactive elements inside messages */
+  .user-card-copy-btn,
+  .user-card-edit-btn,
+  .user-card-chip,
+  .chat-message-actions,
+  .code-header-actions,
+  .mermaid-header {
+    display: none !important;
+  }
+
+  /* Code blocks for print */
+  .chat-message-body pre {
+    background: #f5f5f5 !important;
+    border: 1px solid #ddd !important;
+    border-radius: 6px !important;
+    font-size: 9pt !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Links show URLs */
+  .chat-message-body a::after {
+    content: " (" attr(href) ")";
+    font-size: 9pt;
+    color: #666;
+  }
+
+  /* Page margins */
+  @page {
+    margin: 1.5cm 2cm;
   }
 }

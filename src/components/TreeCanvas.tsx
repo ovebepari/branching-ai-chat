@@ -189,8 +189,8 @@ function TreeCanvasInner() {
         <Controls showInteractive={false} />
         <MiniMap
           nodeColor={(n) => {
-            if (n.data?.isActive) return '#3A37FF';
-            if (n.data?.status === 'streaming') return '#3A37FF';
+            if (n.data?.isActive) return '#10B981';
+            if (n.data?.status === 'streaming') return '#10B981';
             if (n.data?.status === 'error') return '#ef4444';
             return darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)';
           }}
