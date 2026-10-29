@@ -173,6 +173,13 @@ export function ChatPane() {
     }
   }, [isStreaming, activeNodeId, provider, addNode, appendNodeResponse, setNodeStatus, setNodeLabel, getThreadHistory]);
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit();
+    }
+  };
+
 
   const handleCompress = useCallback(() => {
     if (!activeNodeId || !activeNode) return;
@@ -299,6 +306,7 @@ export function ChatPane() {
             ref={textareaRef}
             className="chat-input"
             onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
             placeholder={
               activeNode
                 ? 'Branch from this node…'

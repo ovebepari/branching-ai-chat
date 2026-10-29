@@ -57,6 +57,7 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
   const [apiKey, setApiKey] = useState(provider.apiKey || '');
   const [model, setModel] = useState(provider.model || DEFAULT_MODELS[provider.type]);
   const [baseUrl, setBaseUrl] = useState(provider.baseUrl || 'http://localhost:11434');
+  const [systemPrompt, setSystemPrompt] = useState(provider.systemPrompt || '');
 
   const handleSave = () => {
     setProvider({
@@ -64,6 +65,7 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
       apiKey: apiKey || undefined,
       model: model || DEFAULT_MODELS[type],
       baseUrl: type === 'ollama' ? baseUrl : undefined,
+      systemPrompt: systemPrompt.trim() || undefined,
     });
     onClose();
   };
@@ -156,6 +158,18 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
               />
             </div>
           )}
+
+          <div className="form-group">
+            <label className="form-label">System Prompt</label>
+            <textarea
+              className="form-textarea"
+              value={systemPrompt}
+              onChange={(e) => setSystemPrompt(e.target.value)}
+              placeholder="Optional instructions that get prepended to every conversation…"
+              rows={4}
+            />
+            <span className="form-hint">This text is sent as the first message in every chat to guide the AI's behavior.</span>
+          </div>
         </div>
 
         <div className="modal-footer">

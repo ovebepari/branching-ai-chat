@@ -289,18 +289,32 @@ async function streamAgy({ query, projectId, provider, onChunk, onDone, onError 
 // --- Main dispatcher ---
 export function streamQuery(options: StreamOptions) {
   const { provider } = options;
+
+  // Prepend system prompt as first message if configured
+  let opts = options;
+  if (provider.systemPrompt) {
+    opts = {
+      ...options,
+      history: [
+        { role: 'user' as const, text: provider.systemPrompt },
+        { role: 'model' as const, text: 'Understood. I will follow these instructions.' },
+        ...options.history,
+      ],
+    };
+  }
+
   switch (provider.type) {
     case 'agy':
-      return streamAgy(options);
+      return streamAgy(opts);
     case 'gemini':
-      return streamGemini(options);
+      return streamGemini(opts);
     case 'openrouter':
-      return streamOpenRouter(options);
+      return streamOpenRouter(opts);
     case 'ollama':
-      return streamOllama(options);
+      return streamOllama(opts);
     case 'mock':
     default:
-      return streamMock(options);
+      return streamMock(opts);
   }
 }
 

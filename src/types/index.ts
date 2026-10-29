@@ -44,4 +44,5 @@ export interface ProviderConfig {
   apiKey?: string;
   model?: string;
   baseUrl?: string;
+  systemPrompt?: string;
 }
