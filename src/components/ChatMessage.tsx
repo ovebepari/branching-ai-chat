@@ -8,6 +8,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Copy, Check, Clock, GitBranch, Star, Hash, Pencil, CheckCircle, Zap, XCircle } from 'lucide-react';
+import { MermaidBlock } from './MermaidBlock';
 import { useTreeStore } from '../store/useTreeStore';
 
 interface ChatMessageProps {
@@ -180,6 +181,10 @@ export const ChatMessage = memo(function ChatMessage({ role, text, nodeId, isStr
               const isInline = !className;
               if (isInline) {
                 return <code className={className} {...props}>{children}</code>;
+              }
+              const language = className?.replace('language-', '');
+              if (language === 'mermaid') {
+                return <MermaidBlock chart={String(children)} />;
               }
               return <CodeBlock className={className}>{String(children)}</CodeBlock>;
             },
