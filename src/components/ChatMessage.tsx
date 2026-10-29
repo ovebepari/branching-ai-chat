@@ -183,7 +183,7 @@ export const ChatMessage = memo(function ChatMessage({ role, text, nodeId, isStr
                 return <code className={className} {...props}>{children}</code>;
               }
               const language = className?.replace('language-', '');
-              if (language === 'mermaid') {
+              if (language === 'mermaid' && !isStreaming) {
                 return <MermaidBlock chart={String(children)} />;
               }
               return <CodeBlock className={className}>{String(children)}</CodeBlock>;
