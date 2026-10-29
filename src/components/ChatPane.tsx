@@ -7,6 +7,33 @@ import {
   Star, Copy, ArrowUpToLine, GitBranchPlus, Trash2, Check,
   ChevronDown,
 } from 'lucide-react';
+import type { ProviderType } from '../types';
+
+const MODEL_OPTIONS: Partial<Record<ProviderType, Array<{ value: string; label: string }>>> = {
+  agy: [
+    { value: 'gemini-3.8-flash-low', label: 'Gemini 3.8 Flash (Low)' },
+    { value: 'gemini-3.8-flash-medium', label: 'Gemini 3.8 Flash (Medium)' },
+    { value: 'gemini-3.8-flash-high', label: 'Gemini 3.8 Flash (High)' },
+    { value: 'claude-sonnet-4-6', label: 'Claude Sonnet 4.6 (Thinking)' },
+    { value: 'claude-opus-4-6-thinking', label: 'Claude Opus 4.6 (Thinking)' },
+    { value: 'gpt-oss-120b-medium', label: 'GPT-OSS 120B (Medium)' },
+  ],
+  gemini: [
+    { value: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash' },
+    { value: 'gemini-2.0-flash-lite', label: 'Gemini 2.0 Flash Lite' },
+    { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro' },
+    { value: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash' },
+  ],
+  openrouter: [
+    { value: 'google/gemini-2.0-flash-exp:free', label: 'Gemini 2.0 Flash (Free)' },
+    { value: 'google/gemini-2.5-pro-preview', label: 'Gemini 2.5 Pro Preview' },
+    { value: 'anthropic/claude-sonnet-4', label: 'Claude Sonnet 4' },
+    { value: 'anthropic/claude-3.5-sonnet', label: 'Claude 3.5 Sonnet' },
+    { value: 'openai/gpt-4o', label: 'GPT-4o' },
+    { value: 'openai/gpt-4o-mini', label: 'GPT-4o Mini' },
+    { value: 'meta-llama/llama-3.3-70b-instruct', label: 'Llama 3.3 70B' },
+  ],
+};
 
 export function ChatPane() {
   // Use stable primitive selectors — no new objects created per store change
@@ -29,6 +56,7 @@ export function ChatPane() {
   const setActiveNode = useTreeStore((s) => s.setActiveNode);
   const setNodeUsage = useTreeStore((s) => s.setNodeUsage);
   const provider = useTreeStore((s) => s.provider);
+  const setProvider = useTreeStore((s) => s.setProvider);
   const projects = useTreeStore((s) => s.projects);
   const setActiveProject = useTreeStore((s) => s.setActiveProject);
 
@@ -145,12 +173,6 @@ export function ChatPane() {
     }
   }, [isStreaming, activeNodeId, provider, addNode, appendNodeResponse, setNodeStatus, setNodeLabel, getThreadHistory]);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSubmit();
-    }
-  };
 
   const handleCompress = useCallback(() => {
     if (!activeNodeId || !activeNode) return;
@@ -277,7 +299,6 @@ export function ChatPane() {
             ref={textareaRef}
             className="chat-input"
             onChange={handleInputChange}
-            onKeyDown={handleKeyDown}
             placeholder={
               activeNode
                 ? 'Branch from this node…'
@@ -307,10 +328,21 @@ export function ChatPane() {
               )}
             </div>
             <div className="chat-input-toolbar-right">
-              <span className="chat-input-model-badge">
-                <ChevronDown size={10} />
-                {provider.model || 'default'}
-              </span>
+              {MODEL_OPTIONS[provider.type] ? (
+                <select
+                  className="chat-model-select"
+                  value={provider.model || ''}
+                  onChange={(e) => setProvider({ ...provider, model: e.target.value })}
+                >
+                  {MODEL_OPTIONS[provider.type]!.map((m) => (
+                    <option key={m.value} value={m.value}>{m.label}</option>
+                  ))}
+                </select>
+              ) : (
+                <span className="chat-input-model-badge">
+                  {provider.model || provider.type}
+                </span>
+              )}
               {isStreaming ? (
                 <button
                   className="chat-stop-btn"
@@ -331,10 +363,6 @@ export function ChatPane() {
           </div>
         </div>
 
-        {/* Hints */}
-        <div className="chat-input-hint">
-          <span className="kbd">Enter</span> send · <span className="kbd">Shift+Enter</span> newline
-        </div>
       </div>
 
       {/* Toast notification */}

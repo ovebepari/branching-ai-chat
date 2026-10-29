@@ -184,19 +184,15 @@ a {
   width: 100vw;
   overflow: hidden;
   background-color: #e9e7e2;
-  background-image:
-    linear-gradient(rgba(0,0,0,0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,0,0,0.06) 1px, transparent 1px);
-  background-size: 24px 24px;
+  background-image: radial-gradient(circle, rgba(0,0,0,0.10) 2px, transparent 2px);
+  background-size: 20px 20px;
   position: relative;
 }
 
 [data-theme='dark'] .app-layout {
   background-color: #1a1918;
-  background-image:
-    linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
-  background-size: 24px 24px;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.06) 2px, transparent 2px);
+  background-size: 20px 20px;
 }
 
 .app-body {
@@ -1020,30 +1016,11 @@ a {
 
 .resize-handle:hover,
 .resize-handle:active {
-  background: var(--accent-primary-muted);
+  background: transparent;
 }
 
 .resize-handle-line {
-  width: 2px;
-  height: 100%;
-  background: transparent;
-  opacity: 0;
-  transition: all var(--transition-fast);
-  cursor: col-resize;
-  pointer-events: none;
-}
-
-.resize-handle:hover .resize-handle-line {
-  opacity: 1;
-  width: 3px;
-  background: var(--accent-primary);
-  box-shadow: 0 0 6px var(--accent-primary-muted);
-}
-
-.resize-handle:active .resize-handle-line {
-  opacity: 1;
-  width: 3px;
-  background: var(--accent-primary-hover);
+  display: none;
 }
 
 /* ===== Tree Canvas ===== */
@@ -1687,7 +1664,7 @@ a {
 .chat-messages {
   flex: 1;
   overflow-y: auto;
-  padding: var(--space-6) var(--space-6);
+  padding: var(--space-6) var(--space-10);
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
@@ -2019,6 +1996,15 @@ a {
   padding: 0;
 }
 
+.chat-message-body pre:has(.mermaid-block) {
+  border: none;
+  background: none;
+  border-radius: 0;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+}
+
 .chat-message-body pre code {
   background: none;
   padding: 0;
@@ -2278,6 +2264,36 @@ a {
   border: 1px solid var(--border-medium);
   letter-spacing: 0.02em;
   cursor: default;
+}
+
+.chat-model-select {
+  height: 28px;
+  padding: 0 8px;
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-medium);
+  cursor: pointer;
+  outline: none;
+  transition: all var(--transition-fast);
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 22px;
+}
+
+.chat-model-select:hover {
+  border-color: var(--accent-primary);
+  color: var(--text-primary);
+}
+
+.chat-model-select:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px var(--accent-primary-muted);
 }
 
 /* Send button — rounded square, accent */
@@ -2969,7 +2985,7 @@ a {
   margin: var(--space-3) 0;
   border-radius: var(--radius-md);
   overflow: hidden;
-  border: 1px solid var(--border-light);
+  border: none;
   background: var(--bg-surface);
 }
 
