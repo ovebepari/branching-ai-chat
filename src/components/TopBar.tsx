@@ -15,6 +15,7 @@ import {
   Upload,
   ChevronDown,
   Search,
+  Circle,
 } from 'lucide-react';
 
 interface TopBarProps {
@@ -84,7 +85,7 @@ export const TopBar = memo(function TopBar({ onOpenSettings, onNewProject }: Top
       <div className="topbar-left">
         <div className="topbar-logo">
           <div className="topbar-logo-icon">
-            <FolderTree size={14} />
+            <FolderTree size={14} strokeWidth={2.5} />
           </div>
           <span>Branch Chat</span>
         </div>
@@ -98,13 +99,13 @@ export const TopBar = memo(function TopBar({ onOpenSettings, onNewProject }: Top
             <span className="topbar-project-name">
               {activeProject?.name || 'Select project'}
             </span>
-            <ChevronDown size={14} />
+            <ChevronDown size={14} strokeWidth={2.5} />
           </button>
 
           {projectMenuOpen && (
             <div className="topbar-project-menu">
               <div className="topbar-menu-search">
-                <Search size={13} />
+                <Search size={13} strokeWidth={2.5} />
                 <input
                   type="text"
                   placeholder="Search projects…"
@@ -154,7 +155,7 @@ export const TopBar = memo(function TopBar({ onOpenSettings, onNewProject }: Top
                             }}
                             title="Rename"
                           >
-                            <Pencil size={11} />
+                            <Pencil size={11} strokeWidth={2.5} />
                           </button>
                           <button
                             className="danger"
@@ -166,7 +167,7 @@ export const TopBar = memo(function TopBar({ onOpenSettings, onNewProject }: Top
                             }}
                             title="Delete"
                           >
-                            <Trash2 size={11} />
+                            <Trash2 size={11} strokeWidth={2.5} />
                           </button>
                         </div>
                       </>
@@ -178,7 +179,7 @@ export const TopBar = memo(function TopBar({ onOpenSettings, onNewProject }: Top
                 )}
               </div>
               <button className="topbar-menu-new" onClick={() => { onNewProject(); setProjectMenuOpen(false); }}>
-                <Plus size={13} /> New Project
+                <Plus size={13} strokeWidth={2.5} /> New Project
               </button>
             </div>
           )}
@@ -188,12 +189,14 @@ export const TopBar = memo(function TopBar({ onOpenSettings, onNewProject }: Top
       {/* Right: Actions */}
       <div className="topbar-right">
         <div className="topbar-status">
-          <span className={`status-dot ${statusClass}`} />
+          <Circle size={7} fill={serverOnline ? '#22c55e' : '#ef4444'} stroke="none" />
           <span>{statusLabel}</span>
           {serverOnline && provider.model && provider.type !== 'mock' && (
-            <span style={{ opacity: 0.6 }}>· {provider.model}</span>
+            <span className="topbar-status-model">{provider.model}</span>
           )}
         </div>
+
+        <div className="topbar-actions-divider" />
 
         <button
           className="topbar-action-btn"
@@ -212,7 +215,7 @@ export const TopBar = memo(function TopBar({ onOpenSettings, onNewProject }: Top
           disabled={!activeProjectId}
           title="Export"
         >
-          <Download size={15} />
+          <Download size={15} strokeWidth={2.5} />
         </button>
 
         <button
@@ -236,15 +239,15 @@ export const TopBar = memo(function TopBar({ onOpenSettings, onNewProject }: Top
           }}
           title="Import"
         >
-          <Upload size={15} />
+          <Upload size={15} strokeWidth={2.5} />
         </button>
 
         <button className="topbar-action-btn" onClick={toggleDarkMode} title={darkMode ? 'Light Mode' : 'Dark Mode'}>
-          {darkMode ? <Sun size={15} /> : <Moon size={15} />}
+          {darkMode ? <Sun size={15} strokeWidth={2.5} /> : <Moon size={15} strokeWidth={2.5} />}
         </button>
 
         <button className="topbar-action-btn" onClick={onOpenSettings} title="Settings">
-          <Settings size={15} />
+          <Settings size={15} strokeWidth={2.5} />
         </button>
       </div>
     </div>

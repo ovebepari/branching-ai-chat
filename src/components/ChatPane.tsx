@@ -271,32 +271,8 @@ export function ChatPane() {
       </div>
 
       <div className="chat-input-container">
-        {/* Toolbar: project selector + context */}
-        <div className="chat-input-toolbar">
-          <div className="chat-input-toolbar-left">
-            <select
-              className="chat-project-select"
-              value={activeProjectId || ''}
-              onChange={(e) => setActiveProject(e.target.value)}
-            >
-              {projects.map((p) => (
-                <option key={p.id} value={p.id}>{p.name}</option>
-              ))}
-            </select>
-            {activeNode && (
-              <span className="chat-input-context-pill" title={activeNode.label}>
-                <GitBranch size={12} />
-                <span className="chat-input-context-label">{activeNode.label || 'Node'}</span>
-              </span>
-            )}
-          </div>
-          <div className="chat-input-toolbar-right">
-            <span className="chat-input-model-badge">{provider.model || 'default'}</span>
-          </div>
-        </div>
-
-        {/* Input row */}
-        <div className="chat-input-wrapper">
+        <div className="chat-input-card">
+          {/* Textarea area */}
           <textarea
             ref={textareaRef}
             className="chat-input"
@@ -305,32 +281,59 @@ export function ChatPane() {
             placeholder={
               activeNode
                 ? 'Branch from this node…'
-                : 'Start a new conversation…'
+                : 'Do anything…'
             }
-            rows={2}
+            rows={1}
             disabled={isStreaming}
           />
-          {isStreaming ? (
-            <button
-              className="chat-stop-btn"
-              title="Stop"
-            >
-              <Minimize2 size={16} />
-            </button>
-          ) : (
-            <button
-              className="chat-send-btn"
-              onClick={handleSubmit}
-              title="Send (Enter)"
-            >
-              <ArrowUp size={18} />
-            </button>
-          )}
+
+          {/* Bottom toolbar */}
+          <div className="chat-input-toolbar">
+            <div className="chat-input-toolbar-left">
+              <select
+                className="chat-project-select"
+                value={activeProjectId || ''}
+                onChange={(e) => setActiveProject(e.target.value)}
+              >
+                {projects.map((p) => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
+              {activeNode && (
+                <span className="chat-input-context-pill" title={activeNode.label}>
+                  <GitBranch size={12} />
+                  <span className="chat-input-context-label">{activeNode.label || 'Node'}</span>
+                </span>
+              )}
+            </div>
+            <div className="chat-input-toolbar-right">
+              <span className="chat-input-model-badge">
+                <ChevronDown size={10} />
+                {provider.model || 'default'}
+              </span>
+              {isStreaming ? (
+                <button
+                  className="chat-stop-btn"
+                  title="Stop"
+                >
+                  <Minimize2 size={14} />
+                </button>
+              ) : (
+                <button
+                  className="chat-send-btn"
+                  onClick={handleSubmit}
+                  title="Send (Enter)"
+                >
+                  <ArrowUp size={16} />
+                </button>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Hints */}
         <div className="chat-input-hint">
-          <span className="kbd">Enter</span> send · <span className="kbd">Shift+Enter</span> newline · <span className="kbd">Esc</span> deselect node
+          <span className="kbd">Enter</span> send · <span className="kbd">Shift+Enter</span> newline
         </div>
       </div>
 

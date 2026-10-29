@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import {
   ReactFlow,
-  Background,
   Controls,
   MiniMap,
   useNodesState,
@@ -9,7 +8,6 @@ import {
   type Node,
   type Edge,
   type NodeTypes,
-  BackgroundVariant,
   type NodeMouseHandler,
   useReactFlow,
   ReactFlowProvider,
@@ -187,12 +185,7 @@ function TreeCanvasInner() {
         snapToGrid
         snapGrid={[20, 20]}
       >
-        <Background
-          variant={BackgroundVariant.Dots}
-          gap={24}
-          size={3}
-          color={darkMode ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)'}
-        />
+        {/* No background — app-layout map pattern shows through */}
         <Controls showInteractive={false} />
         <MiniMap
           nodeColor={(n) => {
