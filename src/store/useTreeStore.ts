@@ -56,7 +56,7 @@ interface TreeStore {
   getThreadHistory: (nodeId: string) => Array<{ role: 'user' | 'model'; text: string }>;
 
   // Load from DB
-  loadProjects: () => Promise<void>;
+  loadProjects: (initialProjectId?: string) => Promise<void>;
   loadProject: (id: string) => Promise<void>;
 }
 
@@ -488,12 +488,12 @@ export const useTreeStore = create<TreeStore>((set, get) => ({
 
   // ===== Load from DB =====
 
-  loadProjects: async () => {
+  loadProjects: async (initialProjectId?: string) => {
     try {
       await db.health();
       set({ serverOnline: true });
       const rows = await db.listProjects();
-      const projects: Project[] = rows.map((r: any) => ({
+      let projects: Project[] = rows.map((r: any) => ({
         id: r.id,
         name: r.name,
         rootNodeId: r.root_node_id,
@@ -501,6 +501,32 @@ export const useTreeStore = create<TreeStore>((set, get) => ({
         nodes: {},
         createdAt: r.created_at,
       }));
+
+      // If an initial project ID is given (from URL), load its full data atomically
+      if (initialProjectId && projects.some((p) => p.id === initialProjectId)) {
+        try {
+          const fullData = await db.getProject(initialProjectId);
+          if (fullData) {
+            projects = projects.map((p) =>
+              p.id === initialProjectId
+                ? {
+                    ...p,
+                    name: fullData.name,
+                    rootNodeId: fullData.rootNodeId,
+                    activeNodeId: fullData.activeNodeId,
+                    nodes: fullData.nodes,
+                  }
+                : p
+            );
+            console.log(`[url-restore] loaded project=${initialProjectId}, activeNodeId=${fullData.activeNodeId}, nodes=${Object.keys(fullData.nodes).length}`);
+            set({ projects, activeProjectId: initialProjectId });
+            return;
+          }
+        } catch (err) {
+          console.error('[url-restore] Failed to load initial project:', err);
+        }
+      }
+
       set({ projects });
     } catch {
       set({ serverOnline: false });

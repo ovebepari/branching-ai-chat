@@ -48,49 +48,22 @@ export default function App() {
   const layoutRef = useRef<LayoutSizes>(layout);
   layoutRef.current = layout;
 
-  // Track whether we've restored from URL to avoid double-load
-  const restoredRef = useRef(false);
-  // Capture URL params once at init (before any effects clear them)
+  // Capture URL params once at init
   const initUrlParams = useRef(new URLSearchParams(window.location.search));
+  const [restored, setRestored] = useState(false);
 
-  // Load projects on mount
+  // Load projects on mount — pass URL project_id for atomic restore
   useEffect(() => {
-    loadProjects();
-  }, [loadProjects]);
-
-  // After projects load, restore active project + node from URL
-  useEffect(() => {
-    if (restoredRef.current || projects.length === 0) return;
-    restoredRef.current = true;
-
     const urlProjectId = initUrlParams.current.get('project_id');
-    const urlNodeId = initUrlParams.current.get('node_id');
-
-    if (urlProjectId && projects.some((p) => p.id === urlProjectId)) {
-      setActiveProject(urlProjectId);
-
-      // Wait for nodes to load, then restore node
-      if (urlNodeId) {
-        const unsub = useTreeStore.subscribe((state) => {
-          const proj = state.projects.find((p) => p.id === urlProjectId);
-          if (proj && Object.keys(proj.nodes).length > 0) {
-            unsub();
-            if (proj.nodes[urlNodeId]) {
-              // Use setTimeout to avoid calling setState during subscribe
-              setTimeout(() => setActiveNode(urlNodeId), 0);
-            }
-          }
-        });
-        // Safety: unsubscribe after 10s
-        setTimeout(() => unsub(), 10000);
-      }
-    }
-  }, [projects, setActiveProject, setActiveNode]);
+    loadProjects(urlProjectId || undefined).then(() => {
+      setRestored(true);
+    });
+  }, [loadProjects]);
 
   // Sync activeProjectId + activeNodeId → URL (skip until restore is done)
   const activeNodeId = getActiveProject()?.activeNodeId;
   useEffect(() => {
-    if (!restoredRef.current) return;
+    if (!restored) return;
 
     const params = new URLSearchParams();
     if (activeProjectId) {
@@ -103,7 +76,7 @@ export default function App() {
       ? `${window.location.pathname}?${params}`
       : window.location.pathname;
     window.history.replaceState(null, '', newUrl);
-  }, [activeProjectId, activeNodeId]);
+  }, [activeProjectId, activeNodeId, restored]);
 
   const handleNewProject = useCallback(async () => {
     const name = `Project ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`;
