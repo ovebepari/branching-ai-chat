@@ -1,11 +1,12 @@
 import { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import { useTreeStore } from '../store/useTreeStore';
 import { streamQuery, generateLabel } from '../services/api';
+import type { ImageAttachment } from '../services/api';
 import { ChatMessage } from './ChatMessage';
 import {
   MessageSquare, GitBranch, Minimize2, ArrowUp, Download,
   Star, Copy, ArrowUpToLine, GitBranchPlus, Trash2, Check,
-  ChevronDown,
+  ChevronDown, ImagePlus, X,
 } from 'lucide-react';
 import type { ProviderType } from '../types';
 
@@ -64,8 +65,10 @@ export function ChatPane() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [toast, setToast] = useState('');
   const [copied, setCopied] = useState(false);
+  const [attachedImages, setAttachedImages] = useState<ImageAttachment[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const activeNodeId = project?.activeNodeId;
   const activeNode = activeNodeId ? project?.nodes[activeNodeId] : null;
@@ -104,6 +107,56 @@ export function ChatPane() {
     e.target.style.height = e.target.scrollHeight + 'px';
   }, []);
 
+  // Process image files into base64 attachments
+  const processImageFiles = useCallback((files: FileList | File[]) => {
+    const fileArray = Array.from(files).filter((f) => f.type.startsWith('image/'));
+    if (fileArray.length === 0) return;
+
+    for (const file of fileArray) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = reader.result as string;
+        setAttachedImages((prev) => [
+          ...prev,
+          { data: dataUrl, mimeType: file.type, preview: dataUrl },
+        ]);
+      };
+      reader.readAsDataURL(file);
+    }
+  }, []);
+
+  // Handle paste — intercept images from clipboard
+  const handlePaste = useCallback((e: React.ClipboardEvent) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    const imageFiles: File[] = [];
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.startsWith('image/')) {
+        const file = items[i].getAsFile();
+        if (file) imageFiles.push(file);
+      }
+    }
+
+    if (imageFiles.length > 0) {
+      e.preventDefault();
+      processImageFiles(imageFiles);
+    }
+  }, [processImageFiles]);
+
+  // Handle file input change (upload button)
+  const handleImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      processImageFiles(e.target.files);
+      e.target.value = ''; // reset so same file can be re-selected
+    }
+  }, [processImageFiles]);
+
+  // Remove an attached image
+  const removeImage = useCallback((index: number) => {
+    setAttachedImages((prev) => prev.filter((_, i) => i !== index));
+  }, []);
+
   // Toast auto-hide
   useEffect(() => {
     if (!toast) return;
@@ -125,30 +178,41 @@ export function ChatPane() {
 
   const handleSubmit = useCallback(async () => {
     const query = inputRef.current.trim();
-    if (!query || isStreaming) return;
+    if ((!query && attachedImages.length === 0) || isStreaming) return;
 
     // Collect history from active node's ancestor chain
     const history = activeNodeId ? getThreadHistory(activeNodeId) : [];
 
+    // Build display label — indicate images if present
+    const displayQuery = query || `[${attachedImages.length} image${attachedImages.length > 1 ? 's' : ''}]`;
+
+    // Capture image previews for the node
+    const imagePreviews = attachedImages.map((img) => img.preview || img.data);
+
     // Create a new child node under the active node
-    const newNodeId = await addNode(query, activeNodeId || null);
+    const newNodeId = await addNode(displayQuery, activeNodeId || null, imagePreviews.length > 0 ? imagePreviews : undefined);
     if (!newNodeId) return;
+
+    // Capture images before clearing state
+    const imagesToSend = [...attachedImages];
 
     inputRef.current = '';
     if (textareaRef.current) { textareaRef.current.value = ''; textareaRef.current.style.height = '24px'; }
+    setAttachedImages([]);
     setIsStreaming(true);
     setNodeStatus(newNodeId, 'streaming');
 
     // Generate a concise label
-    const label = generateLabel(query);
+    const label = generateLabel(displayQuery);
     setNodeLabel(newNodeId, label);
 
     try {
       await streamQuery({
         history,
-        query,
+        query: displayQuery,
         provider,
         projectId: project?.id,
+        images: imagesToSend.length > 0 ? imagesToSend : undefined,
         onChunk: (chunk) => {
           appendNodeResponse(newNodeId, chunk);
         },
@@ -171,7 +235,7 @@ export function ChatPane() {
       setNodeStatus(newNodeId, 'error');
       setIsStreaming(false);
     }
-  }, [isStreaming, activeNodeId, provider, addNode, appendNodeResponse, setNodeStatus, setNodeLabel, getThreadHistory]);
+  }, [isStreaming, activeNodeId, provider, attachedImages, addNode, appendNodeResponse, setNodeStatus, setNodeLabel, getThreadHistory]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -252,6 +316,7 @@ export function ChatPane() {
         branchCount={node.children.length}
         bookmarked={node.bookmarked}
         status={node.status}
+        images={node.images}
       />
       {(node.response || node.status === 'streaming') && (
         <ChatMessage
@@ -301,12 +366,31 @@ export function ChatPane() {
 
       <div className="chat-input-container">
         <div className="chat-input-card">
+          {/* Image preview strip */}
+          {attachedImages.length > 0 && (
+            <div className="chat-image-previews">
+              {attachedImages.map((img, i) => (
+                <div key={i} className="chat-image-preview">
+                  <img src={img.preview} alt={`Attachment ${i + 1}`} />
+                  <button
+                    className="chat-image-remove"
+                    onClick={() => removeImage(i)}
+                    title="Remove"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
           {/* Textarea area */}
           <textarea
             ref={textareaRef}
             className="chat-input"
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
+            onPaste={handlePaste}
             placeholder={
               activeNode
                 ? 'Branch from this node…'
@@ -316,9 +400,27 @@ export function ChatPane() {
             disabled={isStreaming}
           />
 
+          {/* Hidden file input for upload button */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            style={{ display: 'none' }}
+            onChange={handleImageUpload}
+          />
+
           {/* Bottom toolbar */}
           <div className="chat-input-toolbar">
             <div className="chat-input-toolbar-left">
+              <button
+                className="chat-image-upload-btn"
+                onClick={() => fileInputRef.current?.click()}
+                title="Attach image"
+                disabled={isStreaming}
+              >
+                <ImagePlus size={16} />
+              </button>
               <select
                 className="chat-project-select"
                 value={activeProjectId || ''}

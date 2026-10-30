@@ -1,4 +1,4 @@
-import { useState, useCallback, memo } from 'react';
+import { useState, useCallback, useEffect, memo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -23,6 +23,7 @@ interface ChatMessageProps {
   branchCount?: number;
   bookmarked?: boolean;
   status?: string;
+  images?: string[];
 }
 
 function CodeBlock({ className, children }: { className?: string; children: string }) {
@@ -63,8 +64,30 @@ function CodeBlock({ className, children }: { className?: string; children: stri
   );
 }
 
-function UserCard({ text, nodeId, label, createdAt, depth, branchCount, bookmarked, status }: Omit<ChatMessageProps, 'role'>) {
+function ImageLightbox({ src, onClose }: { src: string; onClose: () => void }) {
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [onClose]);
+
+  return (
+    <div className="image-lightbox-overlay" onClick={onClose}>
+      <img
+        src={src}
+        alt="Full size"
+        className="image-lightbox-img"
+        onClick={(e) => e.stopPropagation()}
+      />
+    </div>
+  );
+}
+
+function UserCard({ text, nodeId, label, createdAt, depth, branchCount, bookmarked, status, images }: Omit<ChatMessageProps, 'role'>) {
   const [copied, setCopied] = useState(false);
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const setNodeLabel = useTreeStore((s) => s.setNodeLabel);
   const getActiveProject = useTreeStore((s) => s.getActiveProject);
 
@@ -128,7 +151,20 @@ function UserCard({ text, nodeId, label, createdAt, depth, branchCount, bookmark
         </div>
       </div>
 
-      {/* Card body — the prompt text */}
+      {/* Card body — images + prompt text */}
+      {images && images.length > 0 && (
+        <div className="user-card-images">
+          {images.map((src, i) => (
+            <img
+              key={i}
+              src={src}
+              alt={`Attachment ${i + 1}`}
+              className="user-card-image"
+              onClick={() => setLightboxSrc(src)}
+            />
+          ))}
+        </div>
+      )}
       <div className="user-card-body">
         {text}
       </div>
@@ -148,11 +184,16 @@ function UserCard({ text, nodeId, label, createdAt, depth, branchCount, bookmark
           {copied ? <><Check size={10} /> Copied</> : <><Copy size={10} /> Copy</>}
         </button>
       </div>
+
+      {/* Image lightbox */}
+      {lightboxSrc && (
+        <ImageLightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />
+      )}
     </div>
   );
 }
 
-export const ChatMessage = memo(function ChatMessage({ role, text, nodeId, isStreaming, label, createdAt, depth, branchCount, bookmarked, status }: ChatMessageProps) {
+export const ChatMessage = memo(function ChatMessage({ role, text, nodeId, isStreaming, label, createdAt, depth, branchCount, bookmarked, status, images }: ChatMessageProps) {
   if (role === 'user') {
     return (
       <div className="chat-message user">
@@ -165,6 +206,7 @@ export const ChatMessage = memo(function ChatMessage({ role, text, nodeId, isStr
           branchCount={branchCount}
           bookmarked={bookmarked}
           status={status}
+          images={images}
         />
       </div>
     );

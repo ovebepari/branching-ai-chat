@@ -54,6 +54,9 @@ try {
 try {
   db.exec(`ALTER TABLE nodes ADD COLUMN tokens_out INTEGER NOT NULL DEFAULT 0`);
 } catch { /* column already exists */ }
+try {
+  db.exec(`ALTER TABLE nodes ADD COLUMN images TEXT`);
+} catch { /* column already exists */ }
 
 // --- Prepared statements ---
 
@@ -96,7 +99,7 @@ const deleteProjectStmt = db.prepare(
 
 // Nodes
 const insertNode = db.prepare(
-  `INSERT INTO nodes (id, project_id, label, prompt, response, parent_id, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+  `INSERT INTO nodes (id, project_id, label, prompt, response, parent_id, status, created_at, images) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
 );
 
 const getNodesByProject = db.prepare(
@@ -189,10 +192,12 @@ export const dbApi = {
     projectId: string,
     label: string,
     prompt: string,
-    parentId: string | null
+    parentId: string | null,
+    images?: string[]
   ) {
     const now = Date.now();
-    insertNode.run(id, projectId, label, prompt, '', parentId, 'idle', now);
+    const imagesJson = images && images.length > 0 ? JSON.stringify(images) : null;
+    insertNode.run(id, projectId, label, prompt, '', parentId, 'idle', now, imagesJson);
     return getNode.get(id);
   },
 
@@ -269,6 +274,7 @@ export const dbApi = {
         bookmarked: !!row.bookmarked,
         tokensIn: row.tokens_in || 0,
         tokensOut: row.tokens_out || 0,
+        ...(row.images ? { images: JSON.parse(row.images) } : {}),
       };
     }
 

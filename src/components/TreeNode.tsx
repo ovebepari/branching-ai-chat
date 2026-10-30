@@ -13,6 +13,7 @@ import {
   MessageSquare,
   Zap,
   MoreHorizontal,
+  ImageIcon,
 } from 'lucide-react';
 
 export const CustomTreeNode = memo(({ data, id }: NodeProps) => {
@@ -22,7 +23,7 @@ export const CustomTreeNode = memo(({ data, id }: NodeProps) => {
   const setNodeLabel = useTreeStore((s) => s.setNodeLabel);
   const getAncestorChain = useTreeStore((s) => s.getAncestorChain);
   const getActiveProject = useTreeStore((s) => s.getActiveProject);
-  const { status, label, isActive, parentId, bookmarked, createdAt, children: childIds, response, tokensIn, tokensOut } = data as any;
+  const { status, label, isActive, parentId, bookmarked, createdAt, children: childIds, response, tokensIn, tokensOut, images: nodeImages } = data as any;
 
   const timeLabel = createdAt ? new Date(createdAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
 
@@ -235,6 +236,11 @@ export const CustomTreeNode = memo(({ data, id }: NodeProps) => {
 
         {/* Badges */}
         <div className="tree-node-badges">
+          {nodeImages && nodeImages.length > 0 && (
+            <span className="tree-node-badge image-badge" title={`${nodeImages.length} image${nodeImages.length > 1 ? 's' : ''}`}>
+              <ImageIcon size={10} /> {nodeImages.length}
+            </span>
+          )}
           {childCount > 0 && (
             <span className="tree-node-badge" title={`${childCount} branch${childCount > 1 ? 'es' : ''}`}>
               <GitBranchPlus size={10} /> {childCount}

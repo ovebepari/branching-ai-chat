@@ -31,7 +31,7 @@ interface TreeStore {
 
   // Node operations
   setActiveNode: (nodeId: string | null) => void;
-  addNode: (prompt: string, parentId: string | null) => Promise<string>;
+  addNode: (prompt: string, parentId: string | null, images?: string[]) => Promise<string>;
   updateNodeResponse: (nodeId: string, response: string) => void;
   appendNodeResponse: (nodeId: string, chunk: string) => void;
   setNodeStatus: (nodeId: string, status: TreeNode['status']) => void;
@@ -181,7 +181,7 @@ export const useTreeStore = create<TreeStore>((set, get) => ({
     db.setActiveNode(activeProjectId, nodeId).catch(() => {});
   },
 
-  addNode: async (prompt: string, parentId: string | null) => {
+  addNode: async (prompt: string, parentId: string | null, images?: string[]) => {
     const { activeProjectId, projects } = get();
     if (!activeProjectId) return '';
 
@@ -196,6 +196,7 @@ export const useTreeStore = create<TreeStore>((set, get) => ({
       children: [],
       status: 'idle',
       createdAt: Date.now(),
+      ...(images && images.length > 0 ? { images } : {}),
     };
 
     // Optimistic update
@@ -220,7 +221,7 @@ export const useTreeStore = create<TreeStore>((set, get) => ({
 
     // Persist to DB
     try {
-      await db.createNode(activeProjectId, nodeId, label, prompt, parentId);
+      await db.createNode(activeProjectId, nodeId, label, prompt, parentId, images);
     } catch (err) {
       console.error('Failed to persist node:', err);
     }

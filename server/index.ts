@@ -2,12 +2,14 @@ import express from 'express';
 import cors from 'cors';
 import { spawn } from 'child_process';
 import { dbApi } from './db.js';
+import fs from 'fs';
+import path from 'path';
 
 const app = express();
 const PORT = 3001;
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
 
 // ==================== Agy Session Stats ====================
 const serverStartTime = Date.now();
@@ -52,33 +54,10 @@ function logAgyStats() {
   const now = Date.now();
   const uptime = formatUptime(now - serverStartTime);
   const projects = dbApi.listProjects() as any[];
-  const projectsWithAgy = projects.filter((p: any) => p.agy_conversation_id);
+  const activeSessions = projects.filter((p: any) => p.agy_conversation_id).length;
+  const lastAgo = agyStats.lastRequestAt ? formatUptime(now - agyStats.lastRequestAt) : 'never';
 
-  const divider = '─'.repeat(52);
-  console.log(`\n${divider}`);
-  console.log(`  📊  AGY STATUS REPORT  ·  ${new Date().toLocaleString()}`);
-  console.log(divider);
-  console.log(`  ⏱  Uptime:           ${uptime}`);
-  console.log(`  📦  Total requests:   ${agyStats.totalRequests}`);
-  console.log(`  🔄  Active now:       ${agyStats.activeRequests}`);
-  console.log(`  🔁  Stale retries:    ${agyStats.totalRetries}`);
-  console.log(`  ❌  Errors:           ${agyStats.errors}`);
-  console.log(`  📥  Tokens in:        ${agyStats.totalTokensIn.toLocaleString()}`);
-  console.log(`  📤  Tokens out:       ${agyStats.totalTokensOut.toLocaleString()}`);
-  console.log(`  🕐  Last request:     ${agyStats.lastRequestAt ? formatUptime(now - agyStats.lastRequestAt) + ' ago' : 'never'}`);
-  console.log(divider);
-  console.log(`  💬  Projects: ${projects.length} total, ${projectsWithAgy.length} with active agy sessions`);
-
-  if (projectsWithAgy.length > 0) {
-    for (const p of projectsWithAgy) {
-      const stats = agyStats.sessionsByProject[p.id];
-      const reqCount = stats?.requestCount || 0;
-      const model = stats?.lastModel || p.agy_model || '?';
-      console.log(`       ├─ ${p.name || p.id}: ${reqCount} req · ${model} · ${p.agy_conversation_id?.slice(0, 8)}…`);
-    }
-  }
-
-  console.log(`${divider}\n`);
+  console.log(`[agy] stats | uptime=${uptime}, requests=${agyStats.totalRequests}, active=${agyStats.activeRequests}, retries=${agyStats.totalRetries}, errors=${agyStats.errors}, tokens_in=${agyStats.totalTokensIn}, tokens_out=${agyStats.totalTokensOut}, total_tokens=${agyStats.totalTokensIn + agyStats.totalTokensOut}, sessions=${activeSessions}/${projects.length}, last_request=${lastAgo}`);
 }
 
 // Log stats every 5 minutes
@@ -155,8 +134,8 @@ app.delete('/api/projects/:id', (req, res) => {
 // Create a node
 app.post('/api/projects/:projectId/nodes', (req, res) => {
   try {
-    const { id, label, prompt, parentId } = req.body;
-    const node = dbApi.createNode(id, req.params.projectId, label, prompt, parentId);
+    const { id, label, prompt, parentId, images } = req.body;
+    const node = dbApi.createNode(id, req.params.projectId, label, prompt, parentId, images);
 
     // If this is the first node, set it as root
     const project = dbApi.getProject(req.params.projectId) as any;
@@ -269,17 +248,63 @@ app.post('/api/projects/:projectId/nodes/:id/compress', (req, res) => {
   }
 });
 
+// ==================== Image Upload ====================
+
+// Ensure uploads directory exists (inside workspace so agy can view them)
+const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// POST /api/upload — save base64 images to disk, return file paths
+app.post('/api/upload', (req, res) => {
+  const { images } = req.body; // Array of { data: base64, mimeType: string }
+
+  if (!images || !Array.isArray(images) || images.length === 0) {
+    return res.status(400).json({ error: 'images array is required' });
+  }
+
+  try {
+    const savedPaths: string[] = [];
+
+    for (const img of images) {
+      const { data, mimeType } = img;
+      if (!data || !mimeType) continue;
+
+      const ext = mimeType.split('/')[1]?.replace('jpeg', 'jpg') || 'png';
+      const filename = `img_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const filepath = path.join(uploadsDir, filename);
+
+      // Strip data URL prefix if present
+      const base64Data = data.includes(',') ? data.split(',')[1] : data;
+      fs.writeFileSync(filepath, Buffer.from(base64Data, 'base64'));
+
+      savedPaths.push(filepath);
+    }
+
+    console.log(`  📎  [upload] Saved ${savedPaths.length} image(s)`);
+    // Return both absolute paths (for storage) and relative paths (for agy)
+    const relativePaths = savedPaths.map((p: string) => path.relative(process.cwd(), p));
+    res.json({ paths: savedPaths, relativePaths });
+  } catch (err: any) {
+    console.error('  ❌  [upload] Error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ==================== AGY Streaming ====================
 
 // POST /api/agy/query — stream a query through agy
 // This is the main endpoint that the frontend calls.
 // It spawns an agy process, streams NDJSON, and forwards text_delta as SSE.
 app.post('/api/agy/query', (req, res) => {
-  const { projectId, query, model } = req.body;
+  const { projectId, query, model, imagePaths } = req.body;
 
   if (!projectId || !query) {
     return res.status(400).json({ error: 'projectId and query are required' });
   }
+
+  const reqStart = Date.now();
 
   // Look up the project's existing agy conversation ID
   const project = dbApi.getProject(projectId) as any;
@@ -289,6 +314,22 @@ app.post('/api/agy/query', (req, res) => {
 
   const agyConversationId = project.agy_conversation_id;
   const agyModel = model || project.agy_model || 'gemini-3.8-flash-low';
+  const isNewSession = !agyConversationId;
+
+  console.log(`[agy] request | project=${projectId}, model=${agyModel}, session=${isNewSession ? 'new' : 'continue'}, conv=${agyConversationId || 'none'}`);
+  console.log(`[agy] prompt | len=${query.length}, text="${query.slice(0, 120).replace(/\n/g, '\\n')}${query.length > 120 ? '…' : ''}"`);
+
+  // Build the final prompt — prepend image paths if any
+  let finalQuery = query;
+  if (imagePaths && Array.isArray(imagePaths) && imagePaths.length > 0) {
+    const relPaths = imagePaths.map((p: string) => {
+      const abs = path.isAbsolute(p) ? p : path.join(process.cwd(), p);
+      return path.relative(process.cwd(), abs);
+    });
+    const imageRefs = relPaths.map((p: string, i: number) => `Image ${i + 1}: ${p}`).join('\n');
+    finalQuery = `The user has uploaded ${relPaths.length} image(s). View ONLY these specific files:\n${imageRefs}\n\n${query}`;
+    console.log(`[agy] images | count=${relPaths.length}, paths=${relPaths.join(';')}`);
+  }
 
   // Build agy command
   const args: string[] = [
@@ -297,16 +338,14 @@ app.post('/api/agy/query', (req, res) => {
   ];
 
   if (agyConversationId) {
-    // Continue existing conversation
     args.push('--conversation', agyConversationId);
   } else {
-    // New conversation — set model
     args.push('--model', agyModel);
   }
 
-  args.push('-p', query);
+  args.push('-p', finalQuery);
 
-  console.log(`  🚀  [agy] Spawning: agy ${args.join(' ').slice(0, 100)}...`);
+  console.log(`[agy] spawn | cmd=agy, args=${args.length}, prompt_len=${finalQuery.length}`);
 
   // Set up SSE headers
   res.writeHead(200, {
@@ -329,6 +368,8 @@ app.post('/api/agy/query', (req, res) => {
     stdio: ['pipe', 'pipe', 'pipe'],
   });
 
+  console.log(`[agy] pid | pid=${agyProcess.pid}, bin=${agyBin}`);
+
   let agyDone = false;
 
   // Track stats
@@ -350,6 +391,8 @@ app.post('/api/agy/query', (req, res) => {
   let buffer = '';
   let conversationIdCaptured = agyConversationId || '';
   let fullResponse = '';
+  let chunkCount = 0;
+  let stepCount = 0;
 
   agyProcess.stdout.on('data', (data: Buffer) => {
     buffer += data.toString();
@@ -365,16 +408,16 @@ app.post('/api/agy/query', (req, res) => {
         // Capture conversation_id from init event
         if (json.event === 'init' && json.conversation_id) {
           conversationIdCaptured = json.conversation_id;
+          console.log(`[agy] event:init | conv=${conversationIdCaptured}, new=${isNewSession}`);
 
-          // Persist the conversation ID to the project if it's new
           if (!agyConversationId) {
             dbApi.setAgyConversationId(projectId, conversationIdCaptured);
             if (agyModel) {
               dbApi.setAgyModel(projectId, agyModel);
             }
+            console.log(`[agy] session:saved | project=${projectId}, conv=${conversationIdCaptured}, model=${agyModel}`);
           }
 
-          // Send init event to client
           res.write(`data: ${JSON.stringify({
             type: 'init',
             conversationId: conversationIdCaptured,
@@ -386,21 +429,37 @@ app.post('/api/agy/query', (req, res) => {
           const delta = json.step_update.text_delta;
           if (delta) {
             fullResponse += delta;
+            chunkCount++;
             res.write(`data: ${JSON.stringify({
               type: 'delta',
               text: delta,
             })}\n\n`);
           }
+          // Log step transitions
+          if (json.step_update.state === 'ACTIVE' && json.step_update.step_index !== undefined) {
+            const newStep = json.step_update.step_index;
+            if (newStep !== stepCount) {
+              stepCount = newStep;
+              console.log(`[agy] event:step | step=${newStep}, type=${json.step_update.step_type}, conv=${conversationIdCaptured}`);
+            }
+          }
+        }
+
+        // Tool use events
+        if (json.event === 'step_update' && json.step_update?.step_type === 'tool_use') {
+          console.log(`[agy] event:tool | step=${json.step_update.step_index}, tool=${json.step_update.tool_name || 'unknown'}, conv=${conversationIdCaptured}`);
         }
 
         // Result event — final
         if (json.event === 'result') {
-          // Capture token usage
           const usage = json.result?.usage;
-          console.log(`  📊  [agy] Result event usage:`, JSON.stringify(usage || 'none'));
+          const tokensIn = usage?.input_tokens || usage?.prompt_tokens || 0;
+          const tokensOut = usage?.output_tokens || usage?.completion_tokens || 0;
+          console.log(`[agy] event:result | tokens_in=${tokensIn}, tokens_out=${tokensOut}, chunks=${chunkCount}, response_len=${fullResponse.length}`);
+
           if (usage) {
-            agyStats.totalTokensIn += usage.input_tokens || usage.prompt_tokens || 0;
-            agyStats.totalTokensOut += usage.output_tokens || usage.completion_tokens || 0;
+            agyStats.totalTokensIn += tokensIn;
+            agyStats.totalTokensOut += tokensOut;
           }
           res.write(`data: ${JSON.stringify({
             type: 'done',
@@ -417,25 +476,28 @@ app.post('/api/agy/query', (req, res) => {
   agyProcess.stderr.on('data', (data: Buffer) => {
     const errText = data.toString().trim();
     if (errText) {
-      console.error(`  ⚠️  [agy stderr] ${errText}`);
+      console.log(`[agy] stderr | ${errText.slice(0, 200)}`);
     }
   });
 
   agyProcess.on('close', (code) => {
     agyDone = true;
     agyStats.activeRequests = Math.max(0, agyStats.activeRequests - 1);
+    const elapsed = Date.now() - reqStart;
 
     // Update session conversation ID
     if (conversationIdCaptured && agyStats.sessionsByProject[projectId]) {
       agyStats.sessionsByProject[projectId].conversationId = conversationIdCaptured;
     }
 
-    // Detect stale conversation: had an ID, exited OK, but never got an init event
+    // One-line CSV summary with token window
+    console.log(`[agy] close | code=${code}, elapsed=${elapsed}ms, chunks=${chunkCount}, steps=${stepCount}, response_len=${fullResponse.length}, conv=${conversationIdCaptured}, project=${projectId}, model=${agyModel}, window_tokens_in=${agyStats.totalTokensIn}, window_tokens_out=${agyStats.totalTokensOut}, window_total=${agyStats.totalTokensIn + agyStats.totalTokensOut}, window_requests=${agyStats.totalRequests}`);
+
+    // Detect stale conversation
     const wasStale = agyConversationId && !fullResponse && code === 0;
     if (wasStale) {
       agyStats.totalRetries++;
-      console.log(`  🔁  [agy] Stale conversation ${agyConversationId} — clearing and retrying`);
-      // Clear the stale ID from DB
+      console.log(`[agy] stale | conv=${agyConversationId}, action=retry_fresh, project=${projectId}`);
       dbApi.setAgyConversationId(projectId, '');
 
       // Retry as a fresh conversation
@@ -445,7 +507,7 @@ app.post('/api/agy/query', (req, res) => {
         '--model', agyModel,
         '-p', query,
       ];
-      console.log(`  🔄  [agy] Retrying: agy ${retryArgs.join(' ').slice(0, 100)}...`);
+      console.log(`[agy] retry:spawn | model=${agyModel}, prompt_len=${query.length}, project=${projectId}`);
 
       const retryProcess = spawn(agyBin, retryArgs, {
         cwd: process.cwd(),
@@ -469,6 +531,7 @@ app.post('/api/agy/query', (req, res) => {
             if (json.event === 'init' && json.conversation_id) {
               dbApi.setAgyConversationId(projectId, json.conversation_id);
               if (agyModel) dbApi.setAgyModel(projectId, agyModel);
+              console.log(`[agy] retry:init | conv=${json.conversation_id}, project=${projectId}`);
               res.write(`data: ${JSON.stringify({ type: 'init', conversationId: json.conversation_id })}\n\n`);
             }
             if (json.event === 'step_update' && json.step_update?.step_type === 'agent_response') {
@@ -486,7 +549,7 @@ app.post('/api/agy/query', (req, res) => {
 
       retryProcess.stderr.on('data', (data: Buffer) => {
         const errText = data.toString().trim();
-        if (errText) console.error(`  ⚠️  [agy retry stderr] ${errText}`);
+        if (errText) console.log(`[agy] retry:stderr | ${errText.slice(0, 200)}`);
       });
 
       retryProcess.on('close', (retryCode) => {
@@ -495,10 +558,11 @@ app.post('/api/agy/query', (req, res) => {
         }
         res.write('data: [DONE]\n\n');
         res.end();
-        console.log(`  🔄  [agy] Retry exited with code ${retryCode}`);
+        console.log(`[agy] retry:close | code=${retryCode}, project=${projectId}`);
       });
 
       retryProcess.on('error', (err) => {
+        console.log(`[agy] retry:error | error=${err.message}, project=${projectId}`);
         res.write(`data: ${JSON.stringify({ type: 'error', error: `Retry spawn failed: ${err.message}` })}\n\n`);
         res.write('data: [DONE]\n\n');
         res.end();
@@ -516,14 +580,13 @@ app.post('/api/agy/query', (req, res) => {
     }
     res.write('data: [DONE]\n\n');
     res.end();
-    console.log(`  ✅  [agy] Process exited with code ${code}`);
   });
 
   agyProcess.on('error', (err) => {
     agyDone = true;
     agyStats.activeRequests = Math.max(0, agyStats.activeRequests - 1);
     agyStats.errors++;
-    console.error(`  ❌  [agy] Spawn error: ${err.message}`);
+    console.log(`[agy] error:spawn | error=${err.message}, project=${projectId}`);
     res.write(`data: ${JSON.stringify({
       type: 'error',
       error: `Failed to spawn agy: ${err.message}`,

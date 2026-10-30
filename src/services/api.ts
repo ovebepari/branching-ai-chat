@@ -7,11 +7,18 @@ type OnChunk = (chunk: string) => void;
 type OnDone = (usage?: { tokensIn: number; tokensOut: number }) => void;
 type OnError = (err: Error) => void;
 
+export interface ImageAttachment {
+  data: string;      // base64 data (with or without data: prefix)
+  mimeType: string;  // e.g. 'image/png'
+  preview?: string;  // data URL for display
+}
+
 interface StreamOptions {
   history: Array<{ role: 'user' | 'model'; text: string }>;
   query: string;
   provider: ProviderConfig;
   projectId?: string;
+  images?: ImageAttachment[];
   onChunk: OnChunk;
   onDone: OnDone;
   onError: OnError;
@@ -30,7 +37,8 @@ async function streamMock({ query, onChunk, onDone }: StreamOptions) {
 }
 
 // --- Gemini API (free tier) ---
-async function streamGemini({ history, query, provider, onChunk, onDone, onError }: StreamOptions) {
+async function streamGemini(options: StreamOptions) {
+  const { history, query, provider, onChunk, onDone, onError } = options;
   const apiKey = provider.apiKey;
   if (!apiKey) {
     onError(new Error('Gemini API key is required. Get one at makersuite.google.com'));
@@ -44,7 +52,19 @@ async function streamGemini({ history, query, provider, onChunk, onDone, onError
     role: msg.role === 'model' ? 'model' : 'user',
     parts: [{ text: msg.text }],
   }));
-  contents.push({ role: 'user', parts: [{ text: query }] });
+
+  // Build user message parts — text + optional images
+  const userParts: any[] = [];
+  if (options.images && options.images.length > 0) {
+    for (const img of options.images) {
+      const base64Data = img.data.includes(',') ? img.data.split(',')[1] : img.data;
+      userParts.push({
+        inline_data: { mime_type: img.mimeType, data: base64Data },
+      });
+    }
+  }
+  userParts.push({ text: query });
+  contents.push({ role: 'user', parts: userParts });
 
   try {
     const res = await fetch(url, {
@@ -94,7 +114,8 @@ async function streamGemini({ history, query, provider, onChunk, onDone, onError
 }
 
 // --- OpenRouter ---
-async function streamOpenRouter({ history, query, provider, onChunk, onDone, onError }: StreamOptions) {
+async function streamOpenRouter(options: StreamOptions) {
+  const { history, query, provider, onChunk, onDone, onError } = options;
   const apiKey = provider.apiKey;
   if (!apiKey) {
     onError(new Error('OpenRouter API key is required. Get one at openrouter.ai'));
@@ -108,7 +129,22 @@ async function streamOpenRouter({ history, query, provider, onChunk, onDone, onE
       role: msg.role === 'model' ? 'assistant' : 'user',
       content: msg.text,
     }));
-    messages.push({ role: 'user', content: query });
+
+    // Build user message content — text + optional images
+    if (options.images && options.images.length > 0) {
+      const contentParts: any[] = [];
+      for (const img of options.images) {
+        const base64Data = img.data.includes(',') ? img.data.split(',')[1] : img.data;
+        contentParts.push({
+          type: 'image_url',
+          image_url: { url: `data:${img.mimeType};base64,${base64Data}` },
+        });
+      }
+      contentParts.push({ type: 'text', text: query });
+      messages.push({ role: 'user', content: contentParts } as any);
+    } else {
+      messages.push({ role: 'user', content: query });
+    }
 
     const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
@@ -215,10 +251,30 @@ async function streamOllama({ history, query, provider, onChunk, onDone, onError
 }
 
 // --- Antigravity (agy) provider ---
-async function streamAgy({ query, projectId, provider, onChunk, onDone, onError }: StreamOptions) {
+async function streamAgy({ query, projectId, provider, images, onChunk, onDone, onError }: StreamOptions) {
   if (!projectId) {
     onError(new Error('projectId is required for agy provider'));
     return;
+  }
+
+  // Upload images to server if any
+  let imagePaths: string[] | undefined;
+  if (images && images.length > 0) {
+    try {
+      const uploadRes = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          images: images.map((img) => ({ data: img.data, mimeType: img.mimeType })),
+        }),
+      });
+      if (uploadRes.ok) {
+        const uploadData = await uploadRes.json();
+        imagePaths = uploadData.paths;
+      }
+    } catch (err) {
+      console.warn('Image upload failed, sending without images:', err);
+    }
   }
 
   try {
@@ -229,6 +285,7 @@ async function streamAgy({ query, projectId, provider, onChunk, onDone, onError 
         projectId,
         query,
         model: provider.model || 'gemini-3.8-flash-low',
+        imagePaths,
       }),
     });
 

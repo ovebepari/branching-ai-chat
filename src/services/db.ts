@@ -40,10 +40,10 @@ export const db = {
     fetchJson(`/projects/${id}`, { method: 'DELETE' }),
 
   // Nodes
-  createNode: (projectId: string, id: string, label: string, prompt: string, parentId: string | null) =>
+  createNode: (projectId: string, id: string, label: string, prompt: string, parentId: string | null, images?: string[]) =>
     fetchJson(`/projects/${projectId}/nodes`, {
       method: 'POST',
-      body: JSON.stringify({ id, label, prompt, parentId }),
+      body: JSON.stringify({ id, label, prompt, parentId, images }),
     }),
 
   updateNodeResponse: (nodeId: string, response: string, status: string) =>

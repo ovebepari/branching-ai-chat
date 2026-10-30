@@ -10,6 +10,7 @@ export interface TreeNode {
   bookmarked?: boolean;
   tokensIn?: number;
   tokensOut?: number;
+  images?: string[];  // data URLs for attached images
 }
 
 export interface Project {
