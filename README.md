@@ -1,4 +1,9 @@
-# DFS Chat UI
+# Branching Chat
+
+<p align="center">
+  <img src="public/banner.png" alt="Branch Chat Banner" width="100%" />
+</p>
+
 
 An interactive branching conversation tree interface that replaces linear chat with a visual node-based workspace. Routes AI queries through **Google Antigravity (agy)** — one persistent session per project.
 
