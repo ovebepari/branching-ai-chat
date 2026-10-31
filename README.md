@@ -1,13 +1,20 @@
 # Branching Chat
 
-<p align="center">
-  <img src="public/banner.png" alt="Branch Chat Banner" width="100%" />
-</p>
-
-
 An interactive branching conversation tree interface that replaces linear chat with a visual node-based workspace. Routes AI queries through **Google Antigravity (agy)** — one persistent session per project.
 
 ![Layout](https://img.shields.io/badge/Layout-Three_Panel-4f46e5) ![Backend](https://img.shields.io/badge/Backend-SQLite-059669) ![AI](https://img.shields.io/badge/AI-Antigravity_CLI-7c3aed)
+
+## Screenshots
+
+<p align="center">
+  <img src="public/screenshot-home.png" alt="Branch Chat — Home / Projects Page" width="100%" />
+</p>
+<p align="center"><em>Home — manage your projects at a glance</em></p>
+
+<p align="center">
+  <img src="public/screenshot-tree-view.png" alt="Branch Chat — Branching Tree View with Chat Pane" width="100%" />
+</p>
+<p align="center"><em>Branching tree canvas with the chat pane — fork any response into a new direction</em></p>
 
 ## Prerequisites
 
