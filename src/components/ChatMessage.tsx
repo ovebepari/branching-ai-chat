@@ -7,9 +7,13 @@ import 'katex/dist/katex.min.css';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { Copy, Check, Clock, GitBranch, Star, Hash, Pencil, CheckCircle, Zap, XCircle } from 'lucide-react';
+import { Copy, Check, Clock, GitBranch, Star, Hash, Pencil, CheckCircle, Zap, XCircle, Bot, User } from 'lucide-react';
 import { MermaidBlock } from './MermaidBlock';
 import { useTreeStore } from '../store/useTreeStore';
+import { Message, MessageContent, MessageAvatar, MessageHeader, MessageFooter } from '@/components/ui/message';
+import { Bubble, BubbleContent } from '@/components/ui/bubble';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { cn } from 'cn';
 
 interface ChatMessageProps {
   role: 'user' | 'model';
@@ -39,10 +43,18 @@ function CodeBlock({ className, children }: { className?: string; children: stri
   }, [code]);
 
   return (
-    <div>
-      <div className="code-block-header">
-        <span>{language}</span>
-        <button className={`code-copy-btn ${copied ? 'copied' : ''}`} onClick={handleCopy}>
+    <div className="overflow-hidden rounded-xl border border-border my-3">
+      <div className="flex items-center justify-between gap-2 border-b border-border bg-muted/50 px-4 py-2">
+        <span className="text-xs font-medium text-muted-foreground">{language}</span>
+        <button
+          className={cn(
+            "inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition-colors",
+            copied
+              ? "text-emerald-600 dark:text-emerald-400"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted"
+          )}
+          onClick={handleCopy}
+        >
           {copied ? <><Check size={11} /> Copied</> : <><Copy size={11} /> Copy</>}
         </button>
       </div>
@@ -55,7 +67,7 @@ function CodeBlock({ className, children }: { className?: string; children: stri
           borderRadius: 0,
           fontSize: '0.8125rem',
           padding: '0.75rem 1rem',
-          background: darkMode ? '#282c34' : '#f8f8f8',
+          background: darkMode ? '#1a1a2e' : '#fafafa',
         }}
       >
         {code}
@@ -114,131 +126,182 @@ function UserCard({ text, nodeId, label, createdAt, depth, branchCount, bookmark
   }, [nodeId, getActiveProject, setNodeLabel]);
 
   return (
-    <div className="user-card">
-      {/* Card header with label and meta */}
-      <div className="user-card-header">
-        <div className="user-card-label-row">
-          {bookmarked && (
-            <span className="user-card-bookmark">
-              <Star size={12} fill="currentColor" />
+    <Message align="end">
+      <MessageContent>
+        {/* Header with label + metadata chips */}
+        <MessageHeader className="gap-2 justify-end">
+          <div className="flex items-center gap-1.5 flex-wrap justify-end">
+            {bookmarked && (
+              <Star size={11} fill="currentColor" className="text-amber-500" />
+            )}
+            <span className="text-xs font-semibold text-foreground/80 truncate max-w-[200px]">
+              {label || 'Prompt'}
             </span>
-          )}
-          <span className="user-card-label">{label || 'Prompt'}</span>
-          <button className="user-card-edit-btn" onClick={handleEditLabel} title="Edit label">
-            <Pencil size={11} />
-          </button>
-        </div>
-        <div className="user-card-meta">
-          {depth && (
-            <span className="user-card-chip">
-              <Hash size={10} /> Depth {depth}
-            </span>
-          )}
-          {branchCount !== undefined && branchCount > 0 && (
-            <span className="user-card-chip">
-              <GitBranch size={10} /> {branchCount} branch{branchCount > 1 ? 'es' : ''}
-            </span>
-          )}
-          {status === 'complete' && (
-            <span className="user-card-chip complete"><CheckCircle size={9} /> Done</span>
-          )}
-          {status === 'streaming' && (
-            <span className="user-card-chip streaming"><Zap size={9} /> Streaming</span>
-          )}
-          {status === 'error' && (
-            <span className="user-card-chip error"><XCircle size={9} /> Error</span>
-          )}
-        </div>
-      </div>
+            <button
+              className="p-0.5 rounded text-muted-foreground hover:text-foreground transition-colors opacity-0 group-hover/message:opacity-100"
+              onClick={handleEditLabel}
+              title="Edit label"
+            >
+              <Pencil size={10} />
+            </button>
+          </div>
+        </MessageHeader>
 
-      {/* Card body — images + prompt text */}
-      {images && images.length > 0 && (
-        <div className="user-card-images">
-          {images.map((src, i) => (
-            <img
-              key={i}
-              src={src}
-              alt={`Attachment ${i + 1}`}
-              className="user-card-image"
-              onClick={() => setLightboxSrc(src)}
-            />
-          ))}
-        </div>
-      )}
-      <div className="user-card-body">
-        {text}
-      </div>
-
-      {/* Card footer */}
-      <div className="user-card-footer">
-        {timeLabel && (
-          <span className="user-card-time">
-            <Clock size={10} /> {timeLabel}
-          </span>
+        {/* Metadata chips */}
+        {(depth || (branchCount !== undefined && branchCount > 0) || status) && (
+          <div className="flex items-center gap-1.5 flex-wrap justify-end px-1">
+            {depth && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-muted/80 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                <Hash size={9} /> Depth {depth}
+              </span>
+            )}
+            {branchCount !== undefined && branchCount > 0 && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-muted/80 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                <GitBranch size={9} /> {branchCount} branch{branchCount > 1 ? 'es' : ''}
+              </span>
+            )}
+            {status === 'complete' && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+                <CheckCircle size={9} /> Done
+              </span>
+            )}
+            {status === 'streaming' && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/10 px-2 py-0.5 text-[10px] font-medium text-blue-600 dark:text-blue-400 animate-pulse">
+                <Zap size={9} /> Streaming
+              </span>
+            )}
+            {status === 'error' && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-destructive/10 px-2 py-0.5 text-[10px] font-medium text-destructive">
+                <XCircle size={9} /> Error
+              </span>
+            )}
+          </div>
         )}
-        <button
-          className={`user-card-copy-btn ${copied ? 'copied' : ''}`}
-          onClick={handleCopy}
-          title="Copy prompt"
-        >
-          {copied ? <><Check size={10} /> Copied</> : <><Copy size={10} /> Copy</>}
-        </button>
-      </div>
+
+        {/* Images */}
+        {images && images.length > 0 && (
+          <div className="flex gap-2 flex-wrap justify-end px-1">
+            {images.map((src, i) => (
+              <img
+                key={i}
+                src={src}
+                alt={`Attachment ${i + 1}`}
+                className="h-20 w-auto rounded-lg border border-border object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => setLightboxSrc(src)}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Message bubble */}
+        <Bubble variant="default" align="end">
+          <BubbleContent className="text-sm leading-relaxed">
+            {text}
+          </BubbleContent>
+        </Bubble>
+
+        {/* Footer with time + copy */}
+        <MessageFooter className="gap-2 justify-end">
+          {timeLabel && (
+            <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
+              <Clock size={9} /> {timeLabel}
+            </span>
+          )}
+          <button
+            className={cn(
+              "inline-flex items-center gap-1 text-[10px] rounded px-1.5 py-0.5 transition-colors",
+              copied
+                ? "text-emerald-600 dark:text-emerald-400"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+            )}
+            onClick={handleCopy}
+            title="Copy prompt"
+          >
+            {copied ? <><Check size={9} /> Copied</> : <><Copy size={9} /> Copy</>}
+          </button>
+        </MessageFooter>
+      </MessageContent>
+
+      <MessageAvatar>
+        <Avatar size="sm">
+          <AvatarFallback className="bg-primary/10 text-primary">
+            <User size={14} />
+          </AvatarFallback>
+        </Avatar>
+      </MessageAvatar>
 
       {/* Image lightbox */}
       {lightboxSrc && (
         <ImageLightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />
       )}
-    </div>
+    </Message>
   );
 }
 
 export const ChatMessage = memo(function ChatMessage({ role, text, nodeId, isStreaming, label, createdAt, depth, branchCount, bookmarked, status, images }: ChatMessageProps) {
   if (role === 'user') {
     return (
-      <div className="chat-message user">
-        <UserCard
-          text={text}
-          nodeId={nodeId}
-          label={label}
-          createdAt={createdAt}
-          depth={depth}
-          branchCount={branchCount}
-          bookmarked={bookmarked}
-          status={status}
-          images={images}
-        />
-      </div>
+      <UserCard
+        text={text}
+        nodeId={nodeId}
+        label={label}
+        createdAt={createdAt}
+        depth={depth}
+        branchCount={branchCount}
+        bookmarked={bookmarked}
+        status={status}
+        images={images}
+      />
     );
   }
 
   return (
-    <div className={`chat-message ${role}`}>
-      <div className="chat-message-body">
-        <ReactMarkdown
-          remarkPlugins={[remarkGfm, remarkMath]}
-          rehypePlugins={[rehypeKatex]}
-          components={{
-            code({ className, children, ...props }) {
-              const isInline = !className;
-              if (isInline) {
-                return <code className={className} {...props}>{children}</code>;
-              }
-              const language = className?.replace('language-', '');
-              if (language === 'mermaid' && !isStreaming) {
-                return <MermaidBlock chart={String(children)} />;
-              }
-              return <CodeBlock className={className}>{String(children)}</CodeBlock>;
-            },
-            pre({ children }) {
-              return <pre>{children}</pre>;
-            },
-          }}
-        >
-          {text}
-        </ReactMarkdown>
-        {isStreaming && <span className="streaming-cursor" />}
-      </div>
-    </div>
+    <Message align="start">
+      <MessageAvatar>
+        <Avatar size="sm">
+          <AvatarFallback className="bg-secondary text-secondary-foreground">
+            <Bot size={14} />
+          </AvatarFallback>
+        </Avatar>
+      </MessageAvatar>
+      <MessageContent>
+        <Bubble variant="ghost">
+          <BubbleContent className="prose-chat max-w-none">
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm, remarkMath]}
+              rehypePlugins={[rehypeKatex]}
+              components={{
+                code({ className, children, ...props }) {
+                  const isInline = !className;
+                  if (isInline) {
+                    return (
+                      <code
+                        className="rounded-md bg-muted px-1.5 py-0.5 text-[0.8125rem] font-mono text-foreground"
+                        {...props}
+                      >
+                        {children}
+                      </code>
+                    );
+                  }
+                  const language = className?.replace('language-', '');
+                  if (language === 'mermaid' && !isStreaming) {
+                    return <MermaidBlock chart={String(children)} />;
+                  }
+                  return <CodeBlock className={className}>{String(children)}</CodeBlock>;
+                },
+                pre({ children }) {
+                  return <pre className="!bg-transparent !p-0 !m-0">{children}</pre>;
+                },
+              }}
+            >
+              {text}
+            </ReactMarkdown>
+            {isStreaming && (
+              <span className="inline-block w-2 h-4 ml-0.5 bg-primary/60 animate-pulse rounded-sm" />
+            )}
+          </BubbleContent>
+        </Bubble>
+      </MessageContent>
+    </Message>
   );
 });

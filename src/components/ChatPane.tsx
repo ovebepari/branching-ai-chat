@@ -4,11 +4,14 @@ import { streamQuery, generateLabel } from '../services/api';
 import type { ImageAttachment } from '../services/api';
 import { ChatMessage } from './ChatMessage';
 import {
-  MessageSquare, GitBranch, Minimize2, ArrowUp, Download,
-  Star, Copy, ArrowUpToLine, GitBranchPlus, Trash2, Check,
-  ChevronDown, ImagePlus, X,
+  MessageSquare, GitBranch, ArrowUp,
+  ImagePlus, X, Bot, Sparkles, Square,
 } from 'lucide-react';
 import type { ProviderType } from '../types';
+import { MessageGroup } from '@/components/ui/message';
+import { Marker, MarkerIcon, MarkerContent } from '@/components/ui/marker';
+import { Button } from '@/components/ui/button';
+import { cn } from 'cn';
 
 const MODEL_OPTIONS: Partial<Record<ProviderType, Array<{ value: string; label: string }>>> = {
   agy: [
@@ -244,68 +247,12 @@ export function ChatPane() {
     }
   };
 
-
-  const handleCompress = useCallback(() => {
-    if (!activeNodeId || !activeNode) return;
-    const childCount = activeNode.children.length;
-    if (childCount === 0) return;
-
-    // Simple compression: summarize children's prompts
-    const childSummaries = activeNode.children
-      .map((cid) => project?.nodes[cid]?.prompt || '')
-      .filter(Boolean)
-      .map((p, i) => `${i + 1}. ${p.slice(0, 80)}`)
-      .join('\n');
-
-    const summary = `## 📦 Compressed Branch\n\n**Original sub-topics (${childCount}):**\n${childSummaries}\n\n*This branch was compressed to reduce clutter. The detailed conversation was archived.*`;
-    compressBranch(activeNodeId, summary);
-  }, [activeNodeId, activeNode, project?.nodes, compressBranch]);
-
-  // Export thread as Markdown
-  const handleExport = useCallback(() => {
-    if (thread.length === 0) return;
-
-    const projectName = project?.name || 'Untitled';
-    const lines: string[] = [
-      `# ${projectName}`,
-      `> Exported from DFS Chat UI · ${new Date().toLocaleString()}`,
-      `> Branch depth: ${thread.length} nodes`,
-      '',
-    ];
-
-    for (const node of thread) {
-      lines.push(`## 🧑 User`);
-      lines.push('');
-      lines.push(node.prompt);
-      lines.push('');
-      if (node.response) {
-        lines.push(`## 🤖 AI`);
-        lines.push('');
-        lines.push(node.response);
-        lines.push('');
-      }
-      lines.push('---');
-      lines.push('');
-    }
-
-    const content = lines.join('\n');
-    const blob = new Blob([content], { type: 'text/markdown' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${projectName.replace(/[^a-zA-Z0-9]/g, '_')}_thread.md`;
-    a.click();
-    URL.revokeObjectURL(url);
-    showToast('Thread exported as Markdown');
-  }, [thread, project?.name]);
-
   // Depth indicator
   const depth = thread.length;
-  const hasChildren = activeNode?.children && activeNode.children.length > 0;
 
   // Memoize message list to avoid re-rendering on input changes
   const messageElements = useMemo(() => thread.map((node, index) => (
-    <div key={node.id} data-node-id={node.id}>
+    <div key={node.id} data-node-id={node.id} className="animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
       <ChatMessage
         role="user"
         text={node.prompt}
@@ -330,153 +277,186 @@ export function ChatPane() {
   )), [thread]);
 
   return (
-    <div className="chat-pane">
-
-
-      <div className="chat-messages" ref={messagesContainerRef}>
+    <div className="flex flex-col h-full bg-background">
+      {/* Messages area */}
+      <div
+        className="flex-1 overflow-y-auto overscroll-contain scroll-smooth px-4 py-6 lg:px-6"
+        ref={messagesContainerRef}
+      >
         {thread.length === 0 && !activeNode && (
-          <div className="chat-empty">
-            <div className="chat-empty-icon">
-              <MessageSquare size={22} />
+          <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
+            <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 text-primary">
+              <Sparkles size={24} />
             </div>
-            <h3>Start a conversation</h3>
-            <p>
-              Type a message below to create the first node in your tree.
-              You can branch off any node later.
-            </p>
+            <div>
+              <h3 className="text-lg font-semibold text-foreground mb-1">
+                Start a conversation
+              </h3>
+              <p className="text-sm text-muted-foreground max-w-[280px]">
+                Type a message below to create the first node in your tree.
+                You can branch off any node later.
+              </p>
+            </div>
           </div>
         )}
 
         {depth > 1 && (
-          <div className="chat-branch-indicator">
-            <GitBranch size={12} />
-            Thread path: {thread.map((n, i) => (
-              <span key={n.id}>
-                {i > 0 && ' → '}
-                {n.label.slice(0, 20)}
+          <Marker variant="separator" className="mb-4">
+            <MarkerIcon>
+              <GitBranch size={12} />
+            </MarkerIcon>
+            <MarkerContent>
+              <span className="text-xs">
+                Thread path: {thread.map((n, i) => (
+                  <span key={n.id}>
+                    {i > 0 && ' → '}
+                    <span className="font-medium">{n.label.slice(0, 20)}</span>
+                  </span>
+                ))}
               </span>
-            ))}
-          </div>
+            </MarkerContent>
+          </Marker>
         )}
 
-        {messageElements}
+        <MessageGroup className="gap-6">
+          {messageElements}
+        </MessageGroup>
 
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="chat-input-container">
-        <div className="chat-input-card">
-          {/* Image preview strip */}
-          {attachedImages.length > 0 && (
-            <div className="chat-image-previews">
-              {attachedImages.map((img, i) => (
-                <div key={i} className="chat-image-preview">
-                  <img src={img.preview} alt={`Attachment ${i + 1}`} />
-                  <button
-                    className="chat-image-remove"
-                    onClick={() => removeImage(i)}
-                    title="Remove"
-                  >
-                    <X size={12} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Textarea area */}
-          <textarea
-            ref={textareaRef}
-            className="chat-input"
-            onChange={handleInputChange}
-            onKeyDown={handleKeyDown}
-            onPaste={handlePaste}
-            placeholder={
-              activeNode
-                ? 'Branch from this node…'
-                : 'Do anything…'
-            }
-            rows={1}
-            disabled={isStreaming}
-          />
-
-          {/* Hidden file input for upload button */}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            style={{ display: 'none' }}
-            onChange={handleImageUpload}
-          />
-
-          {/* Bottom toolbar */}
-          <div className="chat-input-toolbar">
-            <div className="chat-input-toolbar-left">
-              <button
-                className="chat-image-upload-btn"
-                onClick={() => fileInputRef.current?.click()}
-                title="Attach image"
-                disabled={isStreaming}
-              >
-                <ImagePlus size={16} />
-              </button>
-              <select
-                className="chat-project-select"
-                value={activeProjectId || ''}
-                onChange={(e) => setActiveProject(e.target.value)}
-              >
-                {projects.map((p) => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
+      {/* Input area */}
+      <div className="border-t border-border bg-background/80 backdrop-blur-sm px-4 py-3 lg:px-6">
+        <div className="mx-auto max-w-3xl">
+          <div className="rounded-2xl border border-border bg-card shadow-sm transition-shadow focus-within:shadow-md focus-within:border-ring/40">
+            {/* Image preview strip */}
+            {attachedImages.length > 0 && (
+              <div className="flex gap-2 flex-wrap px-3 pt-3">
+                {attachedImages.map((img, i) => (
+                  <div key={i} className="relative group/preview">
+                    <img
+                      src={img.preview}
+                      alt={`Attachment ${i + 1}`}
+                      className="h-16 w-16 rounded-lg object-cover border border-border"
+                    />
+                    <button
+                      className="absolute -top-1.5 -right-1.5 flex items-center justify-center w-5 h-5 rounded-full bg-destructive text-destructive-foreground opacity-0 group-hover/preview:opacity-100 transition-opacity shadow-sm"
+                      onClick={() => removeImage(i)}
+                      title="Remove"
+                    >
+                      <X size={10} />
+                    </button>
+                  </div>
                 ))}
-              </select>
-              {activeNode && (
-                <span className="chat-input-context-pill" title={activeNode.label}>
-                  <GitBranch size={12} />
-                  <span className="chat-input-context-label">{activeNode.label || 'Node'}</span>
-                </span>
-              )}
-            </div>
-            <div className="chat-input-toolbar-right">
-              {MODEL_OPTIONS[provider.type] ? (
-                <select
-                  className="chat-model-select"
-                  value={provider.model || ''}
-                  onChange={(e) => setProvider({ ...provider, model: e.target.value })}
+              </div>
+            )}
+
+            {/* Textarea */}
+            <textarea
+              ref={textareaRef}
+              className="w-full resize-none border-0 bg-transparent px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none disabled:opacity-50"
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              onPaste={handlePaste}
+              placeholder={
+                activeNode
+                  ? 'Branch from this node…'
+                  : 'Ask anything…'
+              }
+              rows={1}
+              disabled={isStreaming}
+              style={{ minHeight: '24px', maxHeight: '160px' }}
+            />
+
+            {/* Hidden file input for upload button */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              style={{ display: 'none' }}
+              onChange={handleImageUpload}
+            />
+
+            {/* Bottom toolbar */}
+            <div className="flex items-center justify-between gap-2 border-t border-border/50 px-3 py-2">
+              <div className="flex items-center gap-1.5">
+                <button
+                  className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                  onClick={() => fileInputRef.current?.click()}
+                  title="Attach image"
+                  disabled={isStreaming}
                 >
-                  {MODEL_OPTIONS[provider.type]!.map((m) => (
-                    <option key={m.value} value={m.value}>{m.label}</option>
+                  <ImagePlus size={15} />
+                </button>
+
+                <select
+                  className="h-7 rounded-lg border-0 bg-muted/50 px-2 text-xs text-muted-foreground hover:bg-muted cursor-pointer focus:outline-none focus:ring-1 focus:ring-ring"
+                  value={activeProjectId || ''}
+                  onChange={(e) => setActiveProject(e.target.value)}
+                >
+                  {projects.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
                   ))}
                 </select>
-              ) : (
-                <span className="chat-input-model-badge">
-                  {provider.model || provider.type}
-                </span>
-              )}
-              {isStreaming ? (
-                <button
-                  className="chat-stop-btn"
-                  title="Stop"
-                >
-                  <Minimize2 size={14} />
-                </button>
-              ) : (
-                <button
-                  className="chat-send-btn"
-                  onClick={handleSubmit}
-                  title="Send (Enter)"
-                >
-                  <ArrowUp size={16} />
-                </button>
-              )}
+
+                {activeNode && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
+                    <GitBranch size={10} />
+                    <span className="truncate max-w-[100px]">{activeNode.label || 'Node'}</span>
+                  </span>
+                )}
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                {MODEL_OPTIONS[provider.type] ? (
+                  <select
+                    className="h-7 rounded-lg border-0 bg-muted/50 px-2 text-xs text-muted-foreground hover:bg-muted cursor-pointer focus:outline-none focus:ring-1 focus:ring-ring"
+                    value={provider.model || ''}
+                    onChange={(e) => setProvider({ ...provider, model: e.target.value })}
+                  >
+                    {MODEL_OPTIONS[provider.type]!.map((m) => (
+                      <option key={m.value} value={m.value}>{m.label}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                    {provider.model || provider.type}
+                  </span>
+                )}
+
+                {isStreaming ? (
+                  <Button
+                    variant="destructive"
+                    size="icon-sm"
+                    className="rounded-full"
+                    title="Stop"
+                  >
+                    <Square size={12} />
+                  </Button>
+                ) : (
+                  <Button
+                    size="icon-sm"
+                    className="rounded-full"
+                    onClick={handleSubmit}
+                    title="Send (Enter)"
+                  >
+                    <ArrowUp size={14} />
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         </div>
-
       </div>
 
       {/* Toast notification */}
-      <div className={`toast ${toast ? 'visible' : ''}`}>{toast}</div>
+      <div className={cn(
+        "fixed bottom-20 left-1/2 -translate-x-1/2 z-50 rounded-full bg-foreground text-background px-4 py-2 text-xs font-medium shadow-lg transition-all duration-300",
+        toast ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"
+      )}>
+        {toast}
+      </div>
     </div>
   );
 }
