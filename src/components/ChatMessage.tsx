@@ -266,7 +266,11 @@ export const ChatMessage = memo(function ChatMessage({ role, text, nodeId, isStr
               rehypePlugins={[rehypeKatex]}
               components={{
                 code({ className, children, ...props }) {
-                  const isInline = !className;
+                  // Distinguish inline code from fenced code blocks without a language tag.
+                  // Fenced blocks (even without a language) contain newlines; inline code does not.
+                  const hasNewlines = String(children).includes('\n');
+                  const isInline = !className && !hasNewlines;
+                  
                   if (isInline) {
                     return (
                       <code {...props}>
@@ -278,7 +282,7 @@ export const ChatMessage = memo(function ChatMessage({ role, text, nodeId, isStr
                   if (language === 'mermaid' && !isStreaming) {
                     return <MermaidBlock chart={String(children)} />;
                   }
-                  return <CodeBlock className={className}>{String(children)}</CodeBlock>;
+                  return <CodeBlock className={className || 'language-text'}>{String(children)}</CodeBlock>;
                 },
                 pre({ children }) {
                   return <pre className="!bg-transparent !p-0 !m-0">{children}</pre>;
