@@ -82,6 +82,14 @@ export function ChatPane() {
   // Build the thread: ancestor chain messages
   const thread = activeNodeId ? getAncestorChain(activeNodeId) : [];
 
+  // Keep previous messages visible during the render cycle via ref
+  const lastNonEmptyThreadRef = useRef(thread);
+  if (thread.length > 0) {
+    lastNonEmptyThreadRef.current = thread;
+  }
+  // Use the last valid thread to avoid blank flash during node switch
+  const displayThread = thread.length > 0 ? thread : (activeNodeId ? lastNonEmptyThreadRef.current : []);
+
   // Scroll behavior: scroll to the active node's message on node click,
   // scroll to bottom only during streaming
   useEffect(() => {
@@ -89,19 +97,17 @@ export function ChatPane() {
     prevActiveNodeIdRef.current = activeNodeId || null;
 
     if (nodeChanged && activeNodeId) {
-      // Node was clicked — scroll to that node's message at the top
+      // Node was clicked — scroll instantly to the active message
       const nodeEl = document.querySelector(`[data-node-id="${activeNodeId}"]`);
       if (nodeEl) {
-        nodeEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        nodeEl.scrollIntoView({ block: 'start' });
       } else {
-        // Fallback: scroll to top of messages
-        messagesContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+        messagesContainerRef.current?.scrollTo({ top: 0 });
       }
     } else if (activeNode?.status === 'streaming') {
-      // During streaming — keep scrolled to bottom
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [thread, activeNodeId, activeNode?.response, activeNode?.status]);
+  }, [displayThread, activeNodeId, activeNode?.response, activeNode?.status]);
 
   // Auto-resize textarea (via ref, no re-render)
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -248,11 +254,11 @@ export function ChatPane() {
   };
 
   // Depth indicator
-  const depth = thread.length;
+  const depth = displayThread.length;
 
   // Memoize message list to avoid re-rendering on input changes
-  const messageElements = useMemo(() => thread.map((node, index) => (
-    <div key={node.id} data-node-id={node.id} className="animate-in fade-in-0 slide-in-from-bottom-2 duration-300 space-y-4">
+  const messageElements = useMemo(() => displayThread.map((node, index) => (
+    <div key={node.id} data-node-id={node.id} className="space-y-4">
       <ChatMessage
         role="user"
         text={node.prompt}
@@ -274,17 +280,17 @@ export function ChatPane() {
         />
       )}
     </div>
-  )), [thread]);
+  )), [displayThread]);
 
   return (
     <div className="flex flex-col h-full w-full min-w-0 bg-background">
       {/* Messages area */}
       <div
-        className="flex-1 overflow-y-auto overscroll-contain scroll-smooth px-6 py-8"
+        className="flex-1 overflow-y-auto overscroll-contain px-6 py-8"
         ref={messagesContainerRef}
       >
         <div className="w-full min-w-0">
-        {thread.length === 0 && !activeNode && (
+        {displayThread.length === 0 && !activeNodeId && (
           <div className="flex flex-col items-center justify-center min-h-[60vh] gap-5 text-center">
             <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-muted text-muted-foreground">
               <Sparkles size={20} />
@@ -308,7 +314,7 @@ export function ChatPane() {
             </MarkerIcon>
             <MarkerContent>
               <span className="text-xs">
-                Thread path: {thread.map((n, i) => (
+                Thread path: {displayThread.map((n, i) => (
                   <span key={n.id}>
                     {i > 0 && ' → '}
                     <span className="font-medium">{n.label.slice(0, 20)}</span>

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, startTransition } from 'react';
 import {
   ReactFlow,
   Controls,
@@ -141,7 +141,9 @@ function TreeCanvasInner() {
 
   const onNodeClick: NodeMouseHandler = useCallback(
     (_, node) => {
-      setActiveNode(node.id);
+      startTransition(() => {
+        setActiveNode(node.id);
+      });
     },
     [setActiveNode]
   );
