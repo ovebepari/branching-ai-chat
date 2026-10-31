@@ -86,6 +86,7 @@ function loadDarkMode(): boolean {
 
 function applyTheme(dark: boolean) {
   document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  document.documentElement.classList.toggle('dark', dark);
   localStorage.setItem(THEME_STORAGE_KEY, dark ? 'dark' : 'light');
 }
 

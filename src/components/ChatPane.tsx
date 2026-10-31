@@ -252,7 +252,7 @@ export function ChatPane() {
 
   // Memoize message list to avoid re-rendering on input changes
   const messageElements = useMemo(() => thread.map((node, index) => (
-    <div key={node.id} data-node-id={node.id} className="animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
+    <div key={node.id} data-node-id={node.id} className="animate-in fade-in-0 slide-in-from-bottom-2 duration-300 space-y-4">
       <ChatMessage
         role="user"
         text={node.prompt}
@@ -277,14 +277,15 @@ export function ChatPane() {
   )), [thread]);
 
   return (
-    <div className="flex flex-col h-full bg-background">
+    <div className="flex flex-col h-full w-full min-w-0 bg-background">
       {/* Messages area */}
       <div
-        className="flex-1 overflow-y-auto overscroll-contain scroll-smooth px-4 py-6 lg:px-6"
+        className="flex-1 overflow-y-auto overscroll-contain scroll-smooth px-6 py-8"
         ref={messagesContainerRef}
       >
+        <div className="w-full min-w-0">
         {thread.length === 0 && !activeNode && (
-          <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
+          <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 text-center">
             <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 text-primary">
               <Sparkles size={24} />
             </div>
@@ -318,16 +319,17 @@ export function ChatPane() {
           </Marker>
         )}
 
-        <MessageGroup className="gap-6">
+        <MessageGroup className="gap-8">
           {messageElements}
         </MessageGroup>
 
         <div ref={messagesEndRef} />
+        </div>
       </div>
 
       {/* Input area */}
-      <div className="border-t border-border bg-background/80 backdrop-blur-sm px-4 py-3 lg:px-6">
-        <div className="mx-auto max-w-3xl">
+      <div className="border-t border-border bg-background/80 backdrop-blur-sm px-6 py-3">
+        <div className="w-full">
           <div className="rounded-2xl border border-border bg-card shadow-sm transition-shadow focus-within:shadow-md focus-within:border-ring/40">
             {/* Image preview strip */}
             {attachedImages.length > 0 && (
@@ -354,7 +356,7 @@ export function ChatPane() {
             {/* Textarea */}
             <textarea
               ref={textareaRef}
-              className="w-full resize-none border-0 bg-transparent px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none disabled:opacity-50"
+              className="w-full resize-none border-0 bg-transparent px-4 py-3 text-[0.875rem] text-foreground placeholder:text-muted-foreground focus:outline-none disabled:opacity-50 font-sans"
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
               onPaste={handlePaste}

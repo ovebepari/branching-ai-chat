@@ -1,14 +1,19 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "@fontsource-variable/geist";
 
 @custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, monospace;
+}
 
 /* ===== Prose styles for chat message markdown ===== */
 @layer base {
   .prose-chat {
-    font-size: 0.9375rem;
+    font-size: 0.875rem;
     line-height: 1.7;
     color: var(--color-foreground);
   }
@@ -77,7 +82,8 @@
     margin: 0.75em 0;
     font-size: 0.8125rem;
     border-radius: 0.5rem;
-    overflow: hidden;
+    overflow-x: auto;
+    display: block;
     border: 1px solid var(--color-border);
   }
   .prose-chat th,
@@ -262,17 +268,9 @@
   --shadow-focus: 0 0 0 3px rgba(52, 211, 153, 0.3);
 }
 
-/* ===== Reset ===== */
-*,
-*::before,
-*::after {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
+/* ===== Reset (scoped — Tailwind preflight handles base) ===== */
 html {
-  font-size: 17.6px;
+  font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -287,7 +285,9 @@ body {
   width: 100vw;
 }
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   font-family: inherit;
 }
 

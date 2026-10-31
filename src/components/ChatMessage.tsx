@@ -43,7 +43,7 @@ function CodeBlock({ className, children }: { className?: string; children: stri
   }, [code]);
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border my-3">
+    <div className="overflow-hidden rounded-xl border border-border my-3 max-w-full">
       <div className="flex items-center justify-between gap-2 border-b border-border bg-muted/50 px-4 py-2">
         <span className="text-xs font-medium text-muted-foreground">{language}</span>
         <button
@@ -68,6 +68,7 @@ function CodeBlock({ className, children }: { className?: string; children: stri
           fontSize: '0.8125rem',
           padding: '0.75rem 1rem',
           background: darkMode ? '#1a1a2e' : '#fafafa',
+          overflowX: 'auto',
         }}
       >
         {code}
@@ -195,7 +196,7 @@ function UserCard({ text, nodeId, label, createdAt, depth, branchCount, bookmark
 
         {/* Message bubble */}
         <Bubble variant="default" align="end">
-          <BubbleContent className="text-sm leading-relaxed">
+          <BubbleContent className="text-[0.875rem] leading-relaxed px-4 py-2.5">
             {text}
           </BubbleContent>
         </Bubble>
@@ -266,7 +267,7 @@ export const ChatMessage = memo(function ChatMessage({ role, text, nodeId, isStr
       </MessageAvatar>
       <MessageContent>
         <Bubble variant="ghost">
-          <BubbleContent className="prose-chat max-w-none">
+          <BubbleContent className="prose-chat w-full max-w-full text-[0.875rem]">
             <ReactMarkdown
               remarkPlugins={[remarkGfm, remarkMath]}
               rehypePlugins={[rehypeKatex]}
