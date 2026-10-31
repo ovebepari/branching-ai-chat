@@ -10,7 +10,7 @@ import { oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Copy, Check, Clock, GitBranch, Star, Hash, Pencil, CheckCircle, Zap, XCircle, Bot, User } from 'lucide-react';
 import { MermaidBlock } from './MermaidBlock';
 import { useTreeStore } from '../store/useTreeStore';
-import { Message, MessageContent, MessageAvatar, MessageHeader, MessageFooter } from '@/components/ui/message';
+import { Message, MessageContent, MessageAvatar, MessageFooter } from '@/components/ui/message';
 import { Bubble, BubbleContent } from '@/components/ui/bubble';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from 'cn';
@@ -20,7 +20,6 @@ interface ChatMessageProps {
   text: string;
   nodeId: string;
   isStreaming?: boolean;
-  // User card metadata
   label?: string;
   createdAt?: number;
   depth?: number;
@@ -30,6 +29,7 @@ interface ChatMessageProps {
   images?: string[];
 }
 
+/* ── Code block with language header and copy button ── */
 function CodeBlock({ className, children }: { className?: string; children: string }) {
   const [copied, setCopied] = useState(false);
   const darkMode = useTreeStore((s) => s.darkMode);
@@ -44,14 +44,16 @@ function CodeBlock({ className, children }: { className?: string; children: stri
 
   return (
     <div className="overflow-hidden rounded-xl border border-border my-3 max-w-full">
-      <div className="flex items-center justify-between gap-2 border-b border-border bg-muted/50 px-4 py-2">
-        <span className="text-xs font-medium text-muted-foreground">{language}</span>
+      <div className="flex items-center justify-between gap-2 border-b border-border bg-muted/40 px-4 py-2">
+        <span className="text-[0.6875rem] font-mono font-medium tracking-wide text-muted-foreground uppercase">
+          {language}
+        </span>
         <button
           className={cn(
-            "inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition-colors",
+            "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[0.6875rem] font-medium transition-all duration-200",
             copied
               ? "text-emerald-600 dark:text-emerald-400"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted/80"
           )}
           onClick={handleCopy}
         >
@@ -66,9 +68,11 @@ function CodeBlock({ className, children }: { className?: string; children: stri
           margin: 0,
           borderRadius: 0,
           fontSize: '0.8125rem',
-          padding: '0.75rem 1rem',
-          background: darkMode ? '#1a1a2e' : '#fafafa',
+          lineHeight: '1.65',
+          padding: '1rem 1.25rem',
+          background: darkMode ? '#16161e' : '#fafaf9',
           overflowX: 'auto',
+          fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
         }}
       >
         {code}
@@ -98,6 +102,7 @@ function ImageLightbox({ src, onClose }: { src: string; onClose: () => void }) {
   );
 }
 
+/* ── User message card — right-aligned, compact ── */
 function UserCard({ text, nodeId, label, createdAt, depth, branchCount, bookmarked, status, images }: Omit<ChatMessageProps, 'role'>) {
   const [copied, setCopied] = useState(false);
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
@@ -129,55 +134,43 @@ function UserCard({ text, nodeId, label, createdAt, depth, branchCount, bookmark
   return (
     <Message align="end">
       <MessageContent>
-        {/* Header with label + metadata chips */}
-        <MessageHeader className="gap-2 justify-end">
-          <div className="flex items-center gap-1.5 flex-wrap justify-end">
-            {bookmarked && (
-              <Star size={11} fill="currentColor" className="text-amber-500" />
-            )}
-            <span className="text-xs font-semibold text-foreground/80 truncate max-w-[200px]">
-              {label || 'Prompt'}
-            </span>
-            <button
-              className="p-0.5 rounded text-muted-foreground hover:text-foreground transition-colors opacity-0 group-hover/message:opacity-100"
-              onClick={handleEditLabel}
-              title="Edit label"
-            >
-              <Pencil size={10} />
-            </button>
-          </div>
-        </MessageHeader>
+        {/* Metadata line */}
+        <div className="flex items-center gap-2 flex-wrap justify-end px-1">
+          {bookmarked && (
+            <Star size={11} fill="currentColor" className="text-amber-500" />
+          )}
+          <span className="text-[0.75rem] font-medium text-foreground/70 tracking-tight truncate max-w-[200px]">
+            {label || 'Prompt'}
+          </span>
+          <button
+            className="p-0.5 rounded text-muted-foreground/50 hover:text-foreground transition-colors opacity-0 group-hover/message:opacity-100"
+            onClick={handleEditLabel}
+            title="Edit label"
+          >
+            <Pencil size={10} />
+          </button>
 
-        {/* Metadata chips */}
-        {(depth || (branchCount !== undefined && branchCount > 0) || status) && (
-          <div className="flex items-center gap-1.5 flex-wrap justify-end px-1">
-            {depth && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-muted/80 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-                <Hash size={9} /> Depth {depth}
-              </span>
-            )}
-            {branchCount !== undefined && branchCount > 0 && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-muted/80 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-                <GitBranch size={9} /> {branchCount} branch{branchCount > 1 ? 'es' : ''}
-              </span>
-            )}
-            {status === 'complete' && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
-                <CheckCircle size={9} /> Done
-              </span>
-            )}
-            {status === 'streaming' && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/10 px-2 py-0.5 text-[10px] font-medium text-blue-600 dark:text-blue-400 animate-pulse">
-                <Zap size={9} /> Streaming
-              </span>
-            )}
-            {status === 'error' && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-destructive/10 px-2 py-0.5 text-[10px] font-medium text-destructive">
-                <XCircle size={9} /> Error
-              </span>
-            )}
-          </div>
-        )}
+          {/* Inline metadata chips — only key info */}
+          {depth && (
+            <span className="inline-flex items-center gap-0.5 text-[0.625rem] font-medium text-muted-foreground/60">
+              <Hash size={8} />{depth}
+            </span>
+          )}
+          {branchCount !== undefined && branchCount > 0 && (
+            <span className="inline-flex items-center gap-0.5 text-[0.625rem] font-medium text-muted-foreground/60">
+              <GitBranch size={8} />{branchCount}
+            </span>
+          )}
+          {status === 'complete' && (
+            <CheckCircle size={10} className="text-emerald-500/70" />
+          )}
+          {status === 'streaming' && (
+            <Zap size={10} className="text-blue-500 animate-pulse" />
+          )}
+          {status === 'error' && (
+            <XCircle size={10} className="text-destructive/70" />
+          )}
+        </div>
 
         {/* Images */}
         {images && images.length > 0 && (
@@ -196,24 +189,24 @@ function UserCard({ text, nodeId, label, createdAt, depth, branchCount, bookmark
 
         {/* Message bubble */}
         <Bubble variant="default" align="end">
-          <BubbleContent className="text-[0.875rem] leading-relaxed px-4 py-2.5">
+          <BubbleContent className="text-[1rem] leading-[1.55] px-4 py-2.5">
             {text}
           </BubbleContent>
         </Bubble>
 
-        {/* Footer with time + copy */}
+        {/* Footer */}
         <MessageFooter className="gap-2 justify-end">
           {timeLabel && (
-            <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
-              <Clock size={9} /> {timeLabel}
+            <span className="text-[0.625rem] text-muted-foreground/60 font-medium tracking-wide">
+              {timeLabel}
             </span>
           )}
           <button
             className={cn(
-              "inline-flex items-center gap-1 text-[10px] rounded px-1.5 py-0.5 transition-colors",
+              "inline-flex items-center gap-1 text-[0.625rem] rounded px-1.5 py-0.5 transition-all duration-200",
               copied
                 ? "text-emerald-600 dark:text-emerald-400"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                : "text-muted-foreground/50 hover:text-foreground hover:bg-muted/60"
             )}
             onClick={handleCopy}
             title="Copy prompt"
@@ -225,13 +218,12 @@ function UserCard({ text, nodeId, label, createdAt, depth, branchCount, bookmark
 
       <MessageAvatar>
         <Avatar size="sm">
-          <AvatarFallback className="bg-primary/10 text-primary">
+          <AvatarFallback className="bg-primary/8 text-primary">
             <User size={14} />
           </AvatarFallback>
         </Avatar>
       </MessageAvatar>
 
-      {/* Image lightbox */}
       {lightboxSrc && (
         <ImageLightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />
       )}
@@ -239,6 +231,7 @@ function UserCard({ text, nodeId, label, createdAt, depth, branchCount, bookmark
   );
 }
 
+/* ── Model response — left-aligned, editorial prose ── */
 export const ChatMessage = memo(function ChatMessage({ role, text, nodeId, isStreaming, label, createdAt, depth, branchCount, bookmarked, status, images }: ChatMessageProps) {
   if (role === 'user') {
     return (
@@ -260,14 +253,14 @@ export const ChatMessage = memo(function ChatMessage({ role, text, nodeId, isStr
     <Message align="start">
       <MessageAvatar>
         <Avatar size="sm">
-          <AvatarFallback className="bg-secondary text-secondary-foreground">
+          <AvatarFallback className="bg-muted text-muted-foreground">
             <Bot size={14} />
           </AvatarFallback>
         </Avatar>
       </MessageAvatar>
       <MessageContent>
         <Bubble variant="ghost">
-          <BubbleContent className="prose-chat w-full max-w-full text-[0.875rem]">
+          <BubbleContent className="prose-chat w-full max-w-full text-base">
             <ReactMarkdown
               remarkPlugins={[remarkGfm, remarkMath]}
               rehypePlugins={[rehypeKatex]}
@@ -276,10 +269,7 @@ export const ChatMessage = memo(function ChatMessage({ role, text, nodeId, isStr
                   const isInline = !className;
                   if (isInline) {
                     return (
-                      <code
-                        className="rounded-md bg-muted px-1.5 py-0.5 text-[0.8125rem] font-mono text-foreground"
-                        {...props}
-                      >
+                      <code {...props}>
                         {children}
                       </code>
                     );
@@ -298,7 +288,7 @@ export const ChatMessage = memo(function ChatMessage({ role, text, nodeId, isStr
               {text}
             </ReactMarkdown>
             {isStreaming && (
-              <span className="inline-block w-2 h-4 ml-0.5 bg-primary/60 animate-pulse rounded-sm" />
+              <span className="inline-block w-[3px] h-[1.1em] ml-0.5 bg-foreground/40 animate-pulse rounded-full align-text-bottom" />
             )}
           </BubbleContent>
         </Bubble>

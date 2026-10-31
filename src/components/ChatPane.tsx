@@ -285,17 +285,17 @@ export function ChatPane() {
       >
         <div className="w-full min-w-0">
         {thread.length === 0 && !activeNode && (
-          <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 text-center">
-            <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 text-primary">
-              <Sparkles size={24} />
+          <div className="flex flex-col items-center justify-center min-h-[60vh] gap-5 text-center">
+            <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-muted text-muted-foreground">
+              <Sparkles size={20} />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-foreground mb-1">
+              <h3 className="text-xl font-semibold text-foreground mb-2 tracking-tight" style={{ fontFamily: "'Source Serif 4', Georgia, serif" }}>
                 Start a conversation
               </h3>
-              <p className="text-sm text-muted-foreground max-w-[280px]">
-                Type a message below to create the first node in your tree.
-                You can branch off any node later.
+              <p className="text-[0.8125rem] text-muted-foreground max-w-[300px] leading-relaxed">
+                Type a message below to create the first node in your conversation tree.
+                Branch off any response to explore different directions.
               </p>
             </div>
           </div>
@@ -328,9 +328,9 @@ export function ChatPane() {
       </div>
 
       {/* Input area */}
-      <div className="border-t border-border bg-background/80 backdrop-blur-sm px-6 py-3">
+      <div className="border-t border-border/60 bg-background px-6 py-3">
         <div className="w-full">
-          <div className="rounded-2xl border border-border bg-card shadow-sm transition-shadow focus-within:shadow-md focus-within:border-ring/40">
+          <div className="rounded-2xl border border-border/80 bg-card shadow-xs transition-all duration-200 focus-within:shadow-sm focus-within:border-ring/30">
             {/* Image preview strip */}
             {attachedImages.length > 0 && (
               <div className="flex gap-2 flex-wrap px-3 pt-3">
@@ -356,7 +356,7 @@ export function ChatPane() {
             {/* Textarea */}
             <textarea
               ref={textareaRef}
-              className="w-full resize-none border-0 bg-transparent px-4 py-3 text-[0.875rem] text-foreground placeholder:text-muted-foreground focus:outline-none disabled:opacity-50 font-sans"
+              className="w-full resize-none border-0 bg-transparent px-4 py-3 text-base leading-[1.55] text-foreground placeholder:text-muted-foreground/60 focus:outline-none disabled:opacity-50"
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
               onPaste={handlePaste}
@@ -367,7 +367,7 @@ export function ChatPane() {
               }
               rows={1}
               disabled={isStreaming}
-              style={{ minHeight: '24px', maxHeight: '160px' }}
+              style={{ minHeight: '24px', maxHeight: '160px', fontFamily: "'Google Sans', 'Inter', sans-serif" }}
             />
 
             {/* Hidden file input for upload button */}
