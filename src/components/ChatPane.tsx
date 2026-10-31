@@ -6,6 +6,7 @@ import { ChatMessage } from './ChatMessage';
 import {
   MessageSquare, GitBranch, ArrowUp,
   ImagePlus, X, Bot, Sparkles, Square,
+  Plus, FolderTree, Pencil, Trash2, Clock,
 } from 'lucide-react';
 import type { ProviderType } from '../types';
 import { MessageGroup } from '@/components/ui/message';
@@ -63,6 +64,9 @@ export function ChatPane() {
   const setProvider = useTreeStore((s) => s.setProvider);
   const projects = useTreeStore((s) => s.projects);
   const setActiveProject = useTreeStore((s) => s.setActiveProject);
+  const createProject = useTreeStore((s) => s.createProject);
+  const renameProject = useTreeStore((s) => s.renameProject);
+  const deleteProject = useTreeStore((s) => s.deleteProject);
 
   const inputRef = useRef('');
   const [isStreaming, setIsStreaming] = useState(false);
@@ -296,12 +300,11 @@ export function ChatPane() {
               <Sparkles size={20} />
             </div>
             <div>
-              <h3 className="text-xl font-semibold text-foreground mb-2 tracking-tight" style={{ fontFamily: "'Source Serif 4', Georgia, serif" }}>
+              <h3 className="text-xl font-semibold text-foreground mb-2 tracking-tight" style={{ fontFamily: "'Google Sans', sans-serif" }}>
                 Start a conversation
               </h3>
               <p className="text-[0.8125rem] text-muted-foreground max-w-[300px] leading-relaxed">
-                Type a message below to create the first node in your conversation tree.
-                Branch off any response to explore different directions.
+                Type a message below to begin. Branch off any response to explore different directions.
               </p>
             </div>
           </div>
@@ -397,16 +400,6 @@ export function ChatPane() {
                 >
                   <ImagePlus size={15} />
                 </button>
-
-                <select
-                  className="h-7 rounded-lg border-0 bg-muted/50 px-2 text-xs text-muted-foreground hover:bg-muted cursor-pointer focus:outline-none focus:ring-1 focus:ring-ring"
-                  value={activeProjectId || ''}
-                  onChange={(e) => setActiveProject(e.target.value)}
-                >
-                  {projects.map((p) => (
-                    <option key={p.id} value={p.id}>{p.name}</option>
-                  ))}
-                </select>
 
                 {activeNode && (
                   <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">

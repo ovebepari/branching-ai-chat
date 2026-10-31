@@ -43,8 +43,8 @@ function CodeBlock({ className, children }: { className?: string; children: stri
   }, [code]);
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border my-3 max-w-full">
-      <div className="flex items-center justify-between gap-2 border-b border-border bg-muted/40 px-4 py-2">
+    <div className="overflow-hidden rounded-xl my-3 max-w-full">
+      <div className="flex items-center justify-between gap-2 bg-muted/40 px-4 py-2">
         <span className="text-[0.6875rem] font-mono font-medium tracking-wide text-muted-foreground uppercase">
           {language}
         </span>
@@ -72,7 +72,7 @@ function CodeBlock({ className, children }: { className?: string; children: stri
           padding: '1rem 1.25rem',
           background: darkMode ? '#16161e' : '#fafaf9',
           overflowX: 'auto',
-          fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+          fontFamily: "'Ubuntu Mono', 'JetBrains Mono', monospace",
         }}
       >
         {code}

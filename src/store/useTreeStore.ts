@@ -26,7 +26,7 @@ interface TreeStore {
   // Project CRUD
   createProject: (name: string) => Promise<string>;
   deleteProject: (id: string) => Promise<void>;
-  setActiveProject: (id: string) => Promise<void>;
+  setActiveProject: (id: string | null) => Promise<void>;
   renameProject: (id: string, name: string) => Promise<void>;
 
   // Node operations
@@ -151,7 +151,11 @@ export const useTreeStore = create<TreeStore>((set, get) => ({
     }
   },
 
-  setActiveProject: async (id: string) => {
+  setActiveProject: async (id: string | null) => {
+    if (!id) {
+      set({ activeProjectId: null });
+      return;
+    }
     set({ activeProjectId: id });
     // Load full project data from DB
     await get().loadProject(id);
@@ -178,8 +182,10 @@ export const useTreeStore = create<TreeStore>((set, get) => ({
         p.id === activeProjectId ? { ...p, activeNodeId: nodeId } : p
       ),
     });
-    // Fire and forget — persist to DB
-    db.setActiveNode(activeProjectId, nodeId).catch(() => {});
+    // Only persist real node selections to DB — null is just UI "go home" state
+    if (nodeId) {
+      db.setActiveNode(activeProjectId, nodeId).catch(() => {});
+    }
   },
 
   addNode: async (prompt: string, parentId: string | null, images?: string[]) => {
