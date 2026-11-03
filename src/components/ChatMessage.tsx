@@ -189,7 +189,7 @@ function UserCard({ text, nodeId, label, createdAt, depth, branchCount, bookmark
 
         {/* Message bubble */}
         <Bubble variant="default" align="end">
-          <BubbleContent className="text-[1rem] leading-[1.55] px-4 py-2.5">
+          <BubbleContent className="text-[0.875rem] leading-[1.65] px-4 py-2.5">
             {text}
           </BubbleContent>
         </Bubble>
@@ -216,13 +216,6 @@ function UserCard({ text, nodeId, label, createdAt, depth, branchCount, bookmark
         </MessageFooter>
       </MessageContent>
 
-      <MessageAvatar>
-        <Avatar size="sm">
-          <AvatarFallback className="bg-primary/8 text-primary">
-            <User size={14} />
-          </AvatarFallback>
-        </Avatar>
-      </MessageAvatar>
 
       {lightboxSrc && (
         <ImageLightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />
@@ -251,13 +244,7 @@ export const ChatMessage = memo(function ChatMessage({ role, text, nodeId, isStr
 
   return (
     <Message align="start">
-      <MessageAvatar>
-        <Avatar size="sm">
-          <AvatarFallback className="bg-muted text-muted-foreground">
-            <Bot size={14} />
-          </AvatarFallback>
-        </Avatar>
-      </MessageAvatar>
+
       <MessageContent>
         <Bubble variant="ghost">
           <BubbleContent className="prose-chat w-full max-w-full text-base">
