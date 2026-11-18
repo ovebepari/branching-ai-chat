@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, memo } from 'react';
+import { useState, useCallback, useEffect, useMemo, memo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -9,6 +9,7 @@ import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Copy, Check, Clock, GitBranch, Star, Hash, Pencil, CheckCircle, Zap, XCircle, Bot, User } from 'lucide-react';
 import { MermaidBlock } from './MermaidBlock';
+import { normalizeMath } from '../lib/normalizeMath';
 import { useTreeStore } from '../store/useTreeStore';
 import { Message, MessageContent, MessageAvatar, MessageFooter } from '@/components/ui/message';
 import { Bubble, BubbleContent } from '@/components/ui/bubble';
@@ -226,6 +227,8 @@ function UserCard({ text, nodeId, label, createdAt, depth, branchCount, bookmark
 
 /* ── Model response — left-aligned, editorial prose ── */
 export const ChatMessage = memo(function ChatMessage({ role, text, nodeId, isStreaming, label, createdAt, depth, branchCount, bookmarked, status, images }: ChatMessageProps) {
+  const markdown = useMemo(() => (role === 'user' ? text : normalizeMath(text)), [role, text]);
+
   if (role === 'user') {
     return (
       <UserCard
@@ -276,7 +279,7 @@ export const ChatMessage = memo(function ChatMessage({ role, text, nodeId, isStr
                 },
               }}
             >
-              {text}
+              {markdown}
             </ReactMarkdown>
             {isStreaming && (
               <span className="inline-block w-[3px] h-[1.1em] ml-0.5 bg-foreground/40 animate-pulse rounded-full align-text-bottom" />
