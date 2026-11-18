@@ -394,8 +394,14 @@ app.post('/api/agy/query', (req, res) => {
   let chunkCount = 0;
   let stepCount = 0;
 
-  agyProcess.stdout.on('data', (data: Buffer) => {
-    buffer += data.toString();
+  // Decode as a UTF-8 stream so multi-byte characters (─, ×, emoji…) split
+  // across chunk boundaries aren't corrupted into U+FFFD — the response must
+  // reach the DB exactly as agy produced it.
+  agyProcess.stdout.setEncoding('utf8');
+  agyProcess.stderr.setEncoding('utf8');
+
+  agyProcess.stdout.on('data', (data: string) => {
+    buffer += data;
     const lines = buffer.split('\n');
     buffer = lines.pop() || '';
 
@@ -473,8 +479,8 @@ app.post('/api/agy/query', (req, res) => {
     }
   });
 
-  agyProcess.stderr.on('data', (data: Buffer) => {
-    const errText = data.toString().trim();
+  agyProcess.stderr.on('data', (data: string) => {
+    const errText = data.trim();
     if (errText) {
       console.log(`[agy] stderr | ${errText.slice(0, 200)}`);
     }
@@ -519,8 +525,10 @@ app.post('/api/agy/query', (req, res) => {
       });
 
       let retryBuffer = '';
-      retryProcess.stdout.on('data', (data: Buffer) => {
-        retryBuffer += data.toString();
+      retryProcess.stdout.setEncoding('utf8');
+      retryProcess.stderr.setEncoding('utf8');
+      retryProcess.stdout.on('data', (data: string) => {
+        retryBuffer += data;
         const lines = retryBuffer.split('\n');
         retryBuffer = lines.pop() || '';
 
@@ -547,8 +555,8 @@ app.post('/api/agy/query', (req, res) => {
         }
       });
 
-      retryProcess.stderr.on('data', (data: Buffer) => {
-        const errText = data.toString().trim();
+      retryProcess.stderr.on('data', (data: string) => {
+        const errText = data.trim();
         if (errText) console.log(`[agy] retry:stderr | ${errText.slice(0, 200)}`);
       });
 
