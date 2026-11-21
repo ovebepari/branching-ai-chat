@@ -6,6 +6,7 @@ dist/
 .pids
 uploads/
 public/uploads/
-dfs-chat.db-wal
-dfs-chat.db-shm
-dfs-chat.db-journal
+
+# Local SQLite database (created automatically by the server on first run)
+dfs-chat.db
+dfs-chat.db-*
