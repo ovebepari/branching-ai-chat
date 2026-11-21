@@ -5,8 +5,11 @@ const DB_PATH = path.join(process.cwd(), 'dfs-chat.db');
 
 const db = new Database(DB_PATH);
 
-// Enable WAL mode for better concurrent read performance
-db.pragma('journal_mode = WAL');
+// Use rollback-journal mode (not WAL) so all data lives in the single
+// dfs-chat.db file. WAL kept recent writes in a separate -wal file that git
+// branch switches would overwrite, silently losing chats. Switching to DELETE
+// also checkpoints any existing WAL into the main file and removes it.
+db.pragma('journal_mode = DELETE');
 db.pragma('foreign_keys = ON');
 
 // --- Schema ---
