@@ -15,8 +15,10 @@ while IFS= read -r pid; do
   if [[ -z "$pid" ]]; then continue; fi
 
   if kill -0 "$pid" 2>/dev/null; then
-    # Kill the process group so child processes (tsx, vite) also terminate
-    kill -- -"$pid" 2>/dev/null || kill "$pid" 2>/dev/null || true
+    # start.sh runs each server via setsid, so its PID is also its process
+    # group ID — kill the whole group so child processes (tsx, vite) die too
+    kill -- -"$pid" 2>/dev/null || pkill -P "$pid" 2>/dev/null || true
+    kill "$pid" 2>/dev/null || true
     echo "   Killed PID $pid"
   else
     echo "   PID $pid already stopped"

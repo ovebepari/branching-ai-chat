@@ -26,14 +26,14 @@ fi
 echo "🚀 Starting Branch Chat..."
 
 # Start backend (Express API server)
-npm --prefix "$SCRIPT_DIR" run server &
+setsid npm --prefix "$SCRIPT_DIR" run server &
 SERVER_PID=$!
 
 # Small delay to let the server bind its port
 sleep 1
 
 # Start frontend (Vite dev server)
-npm --prefix "$SCRIPT_DIR" run dev &
+setsid npm --prefix "$SCRIPT_DIR" run dev &
 DEV_PID=$!
 
 # Save PIDs
