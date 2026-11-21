@@ -290,7 +290,7 @@ export function ChatPane() {
     <div className="flex flex-col h-full w-full min-w-0 bg-background">
       {/* Messages area */}
       <div
-        className="flex-1 overflow-y-auto overscroll-contain px-6 py-8"
+        className="flex-1 overflow-y-auto overscroll-contain px-[1.5cm] py-8"
         ref={messagesContainerRef}
       >
         <div className="w-full min-w-0">
